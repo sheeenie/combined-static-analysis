@@ -1,0 +1,788 @@
+[2026-05-08 01:49:01] This is codeql database create cwe121-db --language=cpp --command=./build.sh
+[2026-05-08 01:49:01] Log file was started late.
+[2026-05-08 01:49:01] [PROGRESS] database create> Initializing database at /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db.
+[2026-05-08 01:49:01] Running plumbing command: codeql database init --language=cpp --extractor-options-verbosity=1 --qlconfig-file=/Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/qlconfig.yml --source-root=/Users/sheenie/Desktop/my_cases/taint+buffer_trimmed --allow-missing-source-root=false --allow-already-existing -- /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db
+[2026-05-08 01:49:01] Calling plumbing command: codeql resolve languages --extractor-options-verbosity=1 --format=betterjson
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Scanning for [codeql-extractor.yml] from /Users/sheenie/Desktop/codeql/.codeqlmanifest.json
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/go/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/python/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/rust/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/java/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/html/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/xml/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/properties/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/cpp/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/swift/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/csv/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/actions/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/yaml/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/csharp/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/javascript/codeql-extractor.yml.
+[2026-05-08 01:49:01] [DETAILS] resolve languages> Parsing /Users/sheenie/Desktop/codeql/ruby/codeql-extractor.yml.
+[2026-05-08 01:49:01] Plumbing command codeql resolve languages completed:
+                      {
+                        "aliases" : {
+                          "c" : "cpp",
+                          "c++" : "cpp",
+                          "c-c++" : "cpp",
+                          "c-cpp" : "cpp",
+                          "c#" : "csharp",
+                          "java-kotlin" : "java",
+                          "kotlin" : "java",
+                          "javascript-typescript" : "javascript",
+                          "typescript" : "javascript"
+                        },
+                        "extractors" : {
+                          "go" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/go",
+                              "extractor_options" : {
+                                "extract_tests" : {
+                                  "title" : "Whether to include Go test files in the CodeQL database.",
+                                  "description" : "A value indicating whether Go test files should be included in the CodeQL database. The default is 'false'.\n",
+                                  "type" : "string",
+                                  "pattern" : "^(false|true)$"
+                                },
+                                "extract_vendor_dirs" : {
+                                  "title" : "Whether to include Go vendor directories in the CodeQL database.",
+                                  "description" : "A value indicating whether Go vendor directories should be included in the CodeQL database. The default is 'false'.\n",
+                                  "type" : "string",
+                                  "pattern" : "^(false|true)$"
+                                }
+                              }
+                            }
+                          ],
+                          "python" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/python",
+                              "extractor_options" : {
+                                "logging" : {
+                                  "title" : "Options pertaining to logging.",
+                                  "description" : "Options pertaining to logging.",
+                                  "type" : "object",
+                                  "properties" : {
+                                    "verbosity" : {
+                                      "title" : "Python extractor logging verbosity level.",
+                                      "description" : "Controls the level of verbosity of the CodeQL Python extractor.\nThe supported levels are (in order of increasing verbosity):\n\n  - off\n  - errors\n  - warnings\n  - info or progress\n  - debug or progress+\n  - trace or progress++\n  - progress+++\n",
+                                      "type" : "string",
+                                      "pattern" : "^(off|errors|warnings|(info|progress)|(debug|progress\\+)|(trace|progress\\+\\+)|progress\\+\\+\\+)$"
+                                    }
+                                  }
+                                },
+                                "python_executable_name" : {
+                                  "title" : "Controls the name of the Python executable used by the Python extractor.",
+                                  "description" : "The Python extractor uses platform-dependent heuristics to determine the name of the Python executable to use. Specifying a value for this option overrides the name of the Python executable used by the extractor. Accepted values are py, python and python3. Use this setting with caution, the Python extractor requires Python 3 to run.\n",
+                                  "type" : "string",
+                                  "pattern" : "^(py|python|python3)$"
+                                }
+                              }
+                            }
+                          ],
+                          "rust" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/rust",
+                              "extractor_options" : {
+                                "trap" : {
+                                  "title" : "Options pertaining to TRAP.",
+                                  "description" : "Options pertaining to TRAP.",
+                                  "type" : "object",
+                                  "properties" : {
+                                    "compression" : {
+                                      "title" : "Controls compression for the TRAP files written by the extractor.",
+                                      "description" : "This option is only intended for use in debugging the extractor. Accepted values are 'gzip' (to write gzip-compressed TRAP) 'zstd' (to write Zstandard-compressed TRAP) and 'none' (the default, to write uncompressed TRAP).\n",
+                                      "type" : "string",
+                                      "pattern" : "^(none|gzip|zstd)$"
+                                    }
+                                  }
+                                },
+                                "cargo_target_dir" : {
+                                  "title" : "Directory to use for cargo output files.",
+                                  "description" : "This value is an optional path to use as `CARGO_TARGET_DIR` for the internal cargo commands the extractor uses. Pointing it to a persistent directory may reduce execution time of consecutive extractor runs. By default, a new scratch directory is used for each run.\n",
+                                  "type" : "string"
+                                },
+                                "cargo_target" : {
+                                  "title" : "Target architecture",
+                                  "description" : "Target architecture to use for analysis, analogous to `cargo --target`. By default the host architecture is used.\n",
+                                  "type" : "string"
+                                },
+                                "cargo_features" : {
+                                  "title" : "Cargo features to turn on",
+                                  "description" : "Comma-separated list of features to turn on. By default all features are enabled. If any features are specified, then only those features are enabled. The `default` feature must be explicitly specified if only default features are desired. Can be repeated.\n",
+                                  "type" : "array"
+                                },
+                                "cargo_cfg_overrides" : {
+                                  "title" : "Cargo cfg overrides",
+                                  "description" : "Comma-separated list of cfg settings to enable, or disable if prefixed with `-`. Can be repeated.\n",
+                                  "type" : "array"
+                                },
+                                "logging" : {
+                                  "title" : "Options pertaining to logging.",
+                                  "description" : "Options pertaining to logging.",
+                                  "type" : "object",
+                                  "properties" : {
+                                    "verbosity" : {
+                                      "title" : "Extractor logging verbosity level.",
+                                      "description" : "Controls the level of verbosity of the extractor. The supported levels are (in order of increasing verbosity):\n  - off\n  - errors\n  - warnings\n  - info or progress\n  - debug or progress+\n  - trace or progress++\n  - progress+++\n",
+                                      "type" : "string",
+                                      "pattern" : "^(off|errors|warnings|(info|progress)|(debug|progress\\+)|(trace|progress\\+\\+)|progress\\+\\+\\+)$"
+                                    },
+                                    "flamegraph" : {
+                                      "title" : "[Experimental] File path for write flame graph log",
+                                      "description" : "Collect flame graph data using the `tracing-flame` crate. To render a flame graph or chart, run the `inferno-flamegraph` command. See also: https://crates.io/crates/tracing-flame\n",
+                                      "type" : "string"
+                                    }
+                                  }
+                                },
+                                "extract_dependencies_as_source" : {
+                                  "title" : "Extract dependencies as source code",
+                                  "description" : "Extract the full source code of dependencies instead of only extracting signatures.\n",
+                                  "type" : "string",
+                                  "pattern" : "^(false|true)$"
+                                }
+                              }
+                            }
+                          ],
+                          "java" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/java",
+                              "extractor_options" : {
+                                "exclude" : {
+                                  "title" : "A glob excluding files from analysis.",
+                                  "description" : "A glob indicating what files to exclude from the analysis. This accepts glob patterns that are supported by Java's 'getPathMatcher' implementation.\n",
+                                  "type" : "string"
+                                },
+                                "add_prefer_source" : {
+                                  "title" : "Whether to always prefer source files over class files.",
+                                  "description" : "A value indicating whether source files should be preferred over class files. If set to 'true', the extraction adds '-Xprefer:source' to the javac command line. If set to 'false', the extraction uses the default javac behavior ('-Xprefer:newer'). The default is 'true'.\n",
+                                  "type" : "string",
+                                  "pattern" : "^(false|true)$"
+                                },
+                                "buildless" : {
+                                  "title" : "Whether to use buildless (standalone) extraction (experimental).",
+                                  "description" : "A value indicating, which type of extraction the autobuilder should perform. If 'true', then the standalone extractor will be used, otherwise tracing extraction will be performed. The default is 'false'. Note that buildless extraction will generally yield less accurate analysis results, and should only be used in cases where it is not possible to build the code (for example if it uses inaccessible dependencies).\n",
+                                  "type" : "string",
+                                  "pattern" : "^(false|true)$"
+                                },
+                                "buildless_dependency_dir" : {
+                                  "title" : "The path where buildless (standalone) extraction should keep dependencies.",
+                                  "description" : "If set, the buildless (standalone) extractor will store dependencies in this directory.\n",
+                                  "type" : "string"
+                                },
+                                "minimize_dependency_jars" : {
+                                  "title" : "Whether to rewrite and minimize downloaded JAR dependencies (experimental).",
+                                  "description" : "If 'true', JAR dependencies downloaded during extraction will be rewritten to remove unneeded data, such as method bodies. The default is 'false'.\n",
+                                  "type" : "string",
+                                  "pattern" : "^(false|true)$"
+                                }
+                              }
+                            }
+                          ],
+                          "html" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/html"
+                            }
+                          ],
+                          "xml" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/xml"
+                            }
+                          ],
+                          "properties" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/properties"
+                            }
+                          ],
+                          "cpp" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/cpp",
+                              "extractor_options" : {
+                                "scale_timeouts" : {
+                                  "title" : "Value to scale compiler introspection timeouts with",
+                                  "description" : "The extractor attempts to determine what compiler the source code being extracted is compiled with. To this end the extractor makes additional calls to the compiler, some of which are expected to return within a certain fixed time (either 10s or 15s). On some systems that are under high load this time might be too short, and can be scaled up using this option.\n",
+                                  "type" : "string",
+                                  "pattern" : "[0-9]+"
+                                },
+                                "log_verbosity" : {
+                                  "title" : "Verbosity of the extractor logging",
+                                  "description" : "Set the verbosity of the extractor logging to 'quiet' (0), 'normal' (1), 'chatty' (2), or 'noisy' (3). The default is 'normal'.\n",
+                                  "type" : "string",
+                                  "pattern" : "[0-3]"
+                                }
+                              }
+                            }
+                          ],
+                          "swift" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/swift"
+                            }
+                          ],
+                          "csv" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/csv"
+                            }
+                          ],
+                          "actions" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/actions",
+                              "extractor_options" : { }
+                            }
+                          ],
+                          "yaml" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/yaml"
+                            }
+                          ],
+                          "csharp" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/csharp",
+                              "extractor_options" : {
+                                "trap" : {
+                                  "title" : "Options pertaining to TRAP.",
+                                  "description" : "Options pertaining to TRAP.",
+                                  "type" : "object",
+                                  "properties" : {
+                                    "compression" : {
+                                      "title" : "Controls compression for the TRAP files written by the extractor.",
+                                      "description" : "This option is only intended for use in debugging the extractor. Accepted values are 'brotli' (the default, to write brotli-compressed TRAP), 'gzip', and 'none' (to write uncompressed TRAP).\n",
+                                      "type" : "string",
+                                      "pattern" : "^(none|gzip|brotli)$"
+                                    }
+                                  }
+                                },
+                                "buildless" : {
+                                  "title" : "DEPRECATED - Whether to use buildless (standalone) extraction.",
+                                  "description" : "DEPRECATED: Use `--build-mode none` instead.\nA value indicating, which type of extraction the autobuilder should perform. If 'true', then the standalone extractor will be used, otherwise tracing extraction will be performed. The default is 'false'. Note that buildless extraction will generally yield less accurate analysis results, and should only be used in cases where it is not possible to build the code (for example if it uses inaccessible dependencies).\n",
+                                  "type" : "string",
+                                  "pattern" : "^(false|true)$"
+                                },
+                                "logging" : {
+                                  "title" : "Options pertaining to logging.",
+                                  "description" : "Options pertaining to logging.",
+                                  "type" : "object",
+                                  "properties" : {
+                                    "verbosity" : {
+                                      "title" : "Extractor logging verbosity level.",
+                                      "description" : "Controls the level of verbosity of the extractor. The supported levels are (in order of increasing verbosity):\n  - off\n  - errors\n  - warnings\n  - info or progress\n  - debug or progress+\n  - trace or progress++\n  - progress+++\n",
+                                      "type" : "string",
+                                      "pattern" : "^(off|errors|warnings|(info|progress)|(debug|progress\\+)|(trace|progress\\+\\+)|progress\\+\\+\\+)$"
+                                    }
+                                  }
+                                },
+                                "binlog" : {
+                                  "title" : "Binlog",
+                                  "description" : "[EXPERIMENTAL] The value is a path to the MsBuild binary log file that should be extracted. This option only works when `--build-mode none` is also specified.\n",
+                                  "type" : "array"
+                                },
+                                "buildless_dependency_dir" : {
+                                  "title" : "The path where buildless (standalone) extraction should keep dependencies.",
+                                  "description" : "If set, the buildless (standalone) extractor will store dependencies in this directory.\n",
+                                  "type" : "string"
+                                }
+                              }
+                            }
+                          ],
+                          "javascript" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/javascript",
+                              "extractor_options" : {
+                                "skip_types" : {
+                                  "title" : "Skip type extraction for TypeScript",
+                                  "description" : "Whether to skip the extraction of types in a TypeScript application",
+                                  "type" : "string",
+                                  "pattern" : "^(false|true)$"
+                                }
+                              }
+                            }
+                          ],
+                          "ruby" : [
+                            {
+                              "extractor_root" : "/Users/sheenie/Desktop/codeql/ruby",
+                              "extractor_options" : {
+                                "trap" : {
+                                  "title" : "Options pertaining to TRAP.",
+                                  "description" : "Options pertaining to TRAP.",
+                                  "type" : "object",
+                                  "properties" : {
+                                    "compression" : {
+                                      "title" : "Controls compression for the TRAP files written by the extractor.",
+                                      "description" : "This option is only intended for use in debugging the extractor. Accepted values are 'gzip' (the default, to write gzip-compressed TRAP) 'zstd' (to write Zstandard-compressed TRAP) and 'none' (to write uncompressed TRAP).\n",
+                                      "type" : "string",
+                                      "pattern" : "^(none|gzip|zstd)$"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+[2026-05-08 01:49:01] [PROGRESS] database init> Calculating baseline information in /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed
+[2026-05-08 01:49:01] [SPAMMY] database init> Ignoring the following directories when processing baseline information: .git, .hg, .svn.
+[2026-05-08 01:49:01] [DETAILS] database init> Running command in /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed: /Users/sheenie/Desktop/codeql/tools/osx64/scc --by-file --exclude-dir .git,.hg,.svn --format json --no-large --no-min .
+[2026-05-08 01:49:01] [SPAMMY] database init> Found 12 baseline files for cpp.
+[2026-05-08 01:49:01] [PROGRESS] database init> Calculated baseline information for languages: cpp (32ms).
+[2026-05-08 01:49:01] [PROGRESS] database init> Resolving extractor cpp.
+[2026-05-08 01:49:01] [DETAILS] database init> Found candidate extractor root for cpp: /Users/sheenie/Desktop/codeql/cpp.
+[2026-05-08 01:49:01] [PROGRESS] database init> Successfully loaded extractor C/C++ (cpp) from /Users/sheenie/Desktop/codeql/cpp.
+[2026-05-08 01:49:01] [SPAMMY] database init> Determining macOS System Integrity Protection status...
+[2026-05-08 01:49:01] [SPAMMY] database init> Running command [/usr/bin/csrutil, status].
+[2026-05-08 01:49:01] [SPAMMY] database init> SIP is enabled.
+[2026-05-08 01:49:01] [PROGRESS] database init> Created skeleton CodeQL database at /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db. This in-progress database is ready to be populated by an extractor.
+[2026-05-08 01:49:01] Plumbing command codeql database init completed.
+[2026-05-08 01:49:01] [PROGRESS] database create> Running build command: [./build.sh]
+[2026-05-08 01:49:01] Running plumbing command: codeql database trace-command --working-dir=/Users/sheenie/Desktop/my_cases/taint+buffer_trimmed --index-traceless-dbs --no-db-cluster -- /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db ./build.sh
+[2026-05-08 01:49:01] [PROGRESS] database trace-command> Running command in /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed: [./build.sh]
+[2026-05-08 01:49:27] Plumbing command codeql database trace-command completed.
+[2026-05-08 01:49:27] [PROGRESS] database create> Finalizing database at /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db.
+[2026-05-08 01:49:27] Running plumbing command: codeql database finalize --no-db-cluster -- /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db
+[2026-05-08 01:49:27] Using pre-finalize script /Users/sheenie/Desktop/codeql/cpp/tools/pre-finalize.sh.
+[2026-05-08 01:49:27] [PROGRESS] database finalize> Running pre-finalize script /Users/sheenie/Desktop/codeql/cpp/tools/pre-finalize.sh in /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed.
+[2026-05-08 01:49:27] Running plumbing command: codeql database trace-command --working-dir=/Users/sheenie/Desktop/my_cases/taint+buffer_trimmed --no-tracing -- /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db /Users/sheenie/Desktop/codeql/cpp/tools/pre-finalize.sh
+[2026-05-08 01:49:27] [PROGRESS] database trace-command> Running command in /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed: [/Users/sheenie/Desktop/codeql/cpp/tools/pre-finalize.sh]
+[2026-05-08 01:49:29] Plumbing command codeql database trace-command completed.
+[2026-05-08 01:49:29] [PROGRESS] database finalize> Pre-finalize script /Users/sheenie/Desktop/codeql/cpp/tools/pre-finalize.sh completed in 1958 ms.
+[2026-05-08 01:49:29] [PROGRESS] database finalize> Running TRAP import for CodeQL database at /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db...
+[2026-05-08 01:49:29] Running plumbing command: codeql dataset import --dbscheme=/Users/sheenie/Desktop/codeql/cpp/semmlecode.cpp.dbscheme -- /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/db-cpp /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/trap/cpp
+[2026-05-08 01:49:29] Clearing disk cache since the version file /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/db-cpp/default/cache/version does not exist
+[2026-05-08 01:49:29] Tuple pool not found. Clearing relations with cached strings
+[2026-05-08 01:49:29] Trimming disk cache at /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/db-cpp/default/cache in mode clear.
+[2026-05-08 01:49:29] Sequence stamp origin is -5916692961021299800
+[2026-05-08 01:49:29] Pausing evaluation to hard-clear memory at sequence stamp o+0
+[2026-05-08 01:49:29] Unpausing evaluation
+[2026-05-08 01:49:29] Pausing evaluation to quickly trim disk at sequence stamp o+1
+[2026-05-08 01:49:29] Unpausing evaluation
+[2026-05-08 01:49:29] Pausing evaluation to zealously trim disk at sequence stamp o+2
+[2026-05-08 01:49:29] Unpausing evaluation
+[2026-05-08 01:49:29] Trimming completed (2ms): Purged everything.
+[2026-05-08 01:49:29] Scanning for files in /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/trap/cpp
+[2026-05-08 01:49:29] Found 21 files on disk containing 175 TRAP files (1.05 MiB)
+[2026-05-08 01:49:29] [PROGRESS] dataset import> Importing TRAP files
+[2026-05-08 01:49:29] Importing cpp_predefined.acb19af8.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (1 of 175)
+[2026-05-08 01:49:29] Importing _symbol_aliasing.h.be7aec0a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (2 of 175)
+[2026-05-08 01:49:29] Importing _posix_availability.h.ee046c40.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (3 of 175)
+[2026-05-08 01:49:29] Importing cdefs.h.bca746ed.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (4 of 175)
+[2026-05-08 01:49:29] Importing AvailabilityVersions.h.630809d4.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (5 of 175)
+[2026-05-08 01:49:29] Importing AvailabilityInternalLegacy.h.86621e90.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (6 of 175)
+[2026-05-08 01:49:29] Importing AvailabilityInternal.h.d250a7bf.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (7 of 175)
+[2026-05-08 01:49:29] Importing Availability.h.743b5b4e.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (8 of 175)
+[2026-05-08 01:49:29] Importing _types.h.1348c5c3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (9 of 175)
+[2026-05-08 01:49:29] Importing _types.h.c0db0ca0.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (10 of 175)
+[2026-05-08 01:49:29] Importing _pthread_types.h.0d3d9330.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (11 of 175)
+[2026-05-08 01:49:29] Importing _types.h.2daf249c.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (12 of 175)
+[2026-05-08 01:49:29] Importing _types.h.a04c128f.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (13 of 175)
+[2026-05-08 01:49:29] Importing _int8_t.h.f29290cb.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (14 of 175)
+[2026-05-08 01:49:29] Importing _int16_t.h.0efc7dab.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (15 of 175)
+[2026-05-08 01:49:29] Importing _int32_t.h.6962392d.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (16 of 175)
+[2026-05-08 01:49:29] Importing _int64_t.h.536f90e3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (17 of 175)
+[2026-05-08 01:49:29] Importing _u_int8_t.h.552cf7b4.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (18 of 175)
+[2026-05-08 01:49:29] Importing _u_int16_t.h.253a9b79.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (19 of 175)
+[2026-05-08 01:49:29] Importing _u_int32_t.h.3c64ebfb.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (20 of 175)
+[2026-05-08 01:49:29] Importing _u_int64_t.h.cbd81c97.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (21 of 175)
+[2026-05-08 01:49:29] Importing types.h.08df7d56.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (22 of 175)
+[2026-05-08 01:49:29] Importing _intptr_t.h.1464d967.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (23 of 175)
+[2026-05-08 01:49:29] Importing _uintptr_t.h.645528a4.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (24 of 175)
+[2026-05-08 01:49:29] Importing types.h.30d77e47.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (25 of 175)
+[2026-05-08 01:49:29] Importing types.h.aff8b8e3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (26 of 175)
+[2026-05-08 01:49:29] Importing _va_list.h.69a21c4c.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (27 of 175)
+[2026-05-08 01:49:29] Importing _size_t.h.9e8d2d18.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (28 of 175)
+[2026-05-08 01:49:29] Importing _null.h.2c1afedb.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (29 of 175)
+[2026-05-08 01:49:29] Importing stdio.h.c6f1b095.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (30 of 175)
+[2026-05-08 01:49:29] Importing _stdio.h.86ba6e94.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (31 of 175)
+[2026-05-08 01:49:29] Importing _seek_set.h.fdf57fd0.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (32 of 175)
+[2026-05-08 01:49:29] Importing _ctermid.h.cef77499.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (33 of 175)
+[2026-05-08 01:49:29] Importing _off_t.h.5d57ac30.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (34 of 175)
+[2026-05-08 01:49:29] Importing _ssize_t.h.b2b8b5c7.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (35 of 175)
+[2026-05-08 01:49:29] Importing _common.h.e2efa5ee.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (36 of 175)
+[2026-05-08 01:49:29] Importing _stdio.h.6287f011.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (37 of 175)
+[2026-05-08 01:49:29] Importing stdio.h.17623ce9.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (38 of 175)
+[2026-05-08 01:49:29] Importing _pid_t.h.6a3a6049.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (39 of 175)
+[2026-05-08 01:49:29] Importing _id_t.h.0e72c00a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (40 of 175)
+[2026-05-08 01:49:29] Importing appleapiopts.h.dc9b13cc.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (41 of 175)
+[2026-05-08 01:49:29] Importing signal.h.4c43299e.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (42 of 175)
+[2026-05-08 01:49:29] Importing signal.h.508efcc4.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (43 of 175)
+[2026-05-08 01:49:29] Importing _structs.h.ef14a8de.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (44 of 175)
+[2026-05-08 01:49:29] Importing _structs.h.882e747d.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (45 of 175)
+[2026-05-08 01:49:29] Importing _mcontext.h.84c271e3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (46 of 175)
+[2026-05-08 01:49:29] Importing _mcontext.h.2841d5e4.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (47 of 175)
+[2026-05-08 01:49:29] Importing _pthread_attr_t.h.eb92b113.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (48 of 175)
+[2026-05-08 01:49:29] Importing _sigaltstack.h.23097e9b.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (49 of 175)
+[2026-05-08 01:49:29] Importing _ucontext.h.bb7afffb.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (50 of 175)
+[2026-05-08 01:49:29] Importing _sigset_t.h.eacb6a8b.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (51 of 175)
+[2026-05-08 01:49:29] Importing _uid_t.h.cfda2aba.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (52 of 175)
+[2026-05-08 01:49:29] Importing signal.h.a50f189c.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (53 of 175)
+[2026-05-08 01:49:29] Importing _uint8_t.h.b56d0bf4.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (54 of 175)
+[2026-05-08 01:49:29] Importing _uint16_t.h.95cc6274.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (55 of 175)
+[2026-05-08 01:49:29] Importing _uint32_t.h.dc2517bb.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (56 of 175)
+[2026-05-08 01:49:29] Importing _uint64_t.h.c60cbcd5.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (57 of 175)
+[2026-05-08 01:49:29] Importing _intmax_t.h.6c1a2871.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (58 of 175)
+[2026-05-08 01:49:29] Importing _uintmax_t.h.e72b0804.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (59 of 175)
+[2026-05-08 01:49:29] Importing stdint.h.28e6abf5.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (60 of 175)
+[2026-05-08 01:49:29] Importing stdint.h.188490be.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (61 of 175)
+[2026-05-08 01:49:29] Importing _timeval.h.24b7ccb7.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (62 of 175)
+[2026-05-08 01:49:29] Importing resource.h.52810d71.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (63 of 175)
+[2026-05-08 01:49:29] Importing endian.h.71f6451e.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (64 of 175)
+[2026-05-08 01:49:29] Importing _OSByteOrder.h.d62a24c9.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (65 of 175)
+[2026-05-08 01:49:29] Importing _OSByteOrder.h.2a032f3a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (66 of 175)
+[2026-05-08 01:49:29] Importing _endian.h.ada58346.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (67 of 175)
+[2026-05-08 01:49:29] Importing endian.h.194ffb87.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (68 of 175)
+[2026-05-08 01:49:29] Importing endian.h.a419ac90.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (69 of 175)
+[2026-05-08 01:49:29] Importing wait.h.0c66c72c.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (70 of 175)
+[2026-05-08 01:49:29] Importing alloca.h.f0ffb35b.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (71 of 175)
+[2026-05-08 01:49:29] Importing _ct_rune_t.h.d4a9d117.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (72 of 175)
+[2026-05-08 01:49:29] Importing _rune_t.h.33d8e00c.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (73 of 175)
+[2026-05-08 01:49:29] Importing _wchar_t.h.3dc049ba.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (74 of 175)
+[2026-05-08 01:49:29] Importing _ptrcheck.h.c3a91754.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (75 of 175)
+[2026-05-08 01:49:29] Importing _malloc_type.h.360ae016.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (76 of 175)
+[2026-05-08 01:49:29] Importing _malloc.h.f44058dc.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (77 of 175)
+[2026-05-08 01:49:29] Importing _dev_t.h.91a2e6a4.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (78 of 175)
+[2026-05-08 01:49:29] Importing _mode_t.h.0d676e3d.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (79 of 175)
+[2026-05-08 01:49:29] Importing stdlib.h.b79a1c1f.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (80 of 175)
+[2026-05-08 01:49:29] Importing __stddef_max_align_t.h.8cba3490.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (81 of 175)
+[2026-05-08 01:49:29] Importing stddef.h.b53767c9.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (82 of 175)
+[2026-05-08 01:49:29] Importing _clock_t.h.79a09205.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (83 of 175)
+[2026-05-08 01:49:29] Importing _time_t.h.9cd704bb.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (84 of 175)
+[2026-05-08 01:49:29] Importing _timespec.h.c1f5cd57.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (85 of 175)
+[2026-05-08 01:49:29] Importing time.h.5ad66609.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (86 of 175)
+[2026-05-08 01:49:29] Importing _limits.h.040e87ae.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (87 of 175)
+[2026-05-08 01:49:29] Importing limits.h.a1740510.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (88 of 175)
+[2026-05-08 01:49:29] Importing limits.h.baa4916f.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (89 of 175)
+[2026-05-08 01:49:29] Importing syslimits.h.10810ba8.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (90 of 175)
+[2026-05-08 01:49:29] Importing limits.h.7afe3e2f.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (91 of 175)
+[2026-05-08 01:49:29] Importing limits.h.a9ecfa15.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (92 of 175)
+[2026-05-08 01:49:29] Importing _rsize_t.h.5819c111.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (93 of 175)
+[2026-05-08 01:49:29] Importing _errno_t.h.fbe65fbd.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (94 of 175)
+[2026-05-08 01:49:29] Importing string.h.343e3dd7.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (95 of 175)
+[2026-05-08 01:49:29] Importing _strings.h.3033e140.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (96 of 175)
+[2026-05-08 01:49:29] Importing strings.h.78b6a8e6.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (97 of 175)
+[2026-05-08 01:49:29] Importing _string.h.583a3645.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (98 of 175)
+[2026-05-08 01:49:29] Importing string.h.735d6fdb.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (99 of 175)
+[2026-05-08 01:49:29] Importing _wchar_t.h.e7835c09.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (100 of 175)
+[2026-05-08 01:49:29] Importing _wint_t.h.545b4fc3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (101 of 175)
+[2026-05-08 01:49:29] Importing runetype.h.d9dd89da.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (102 of 175)
+[2026-05-08 01:49:29] Importing _ctype.h.18e4159d.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (103 of 175)
+[2026-05-08 01:49:29] Importing ctype.h.de2b8262.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (104 of 175)
+[2026-05-08 01:49:29] Importing _o_sync.h.bfeb891a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (105 of 175)
+[2026-05-08 01:49:29] Importing _o_dsync.h.bfeb891a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (106 of 175)
+[2026-05-08 01:49:29] Importing _s_ifmt.h.c1bb95be.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (107 of 175)
+[2026-05-08 01:49:29] Importing _filesec_t.h.4d68e279.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (108 of 175)
+[2026-05-08 01:49:29] Importing fcntl.h.e5dff333.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (109 of 175)
+[2026-05-08 01:49:29] Importing fcntl.h.cb9076de.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (110 of 175)
+[2026-05-08 01:49:29] Importing _u_char.h.5afe3e69.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (111 of 175)
+[2026-05-08 01:49:29] Importing _u_short.h.df94b703.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (112 of 175)
+[2026-05-08 01:49:29] Importing _u_int.h.22f18ecb.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (113 of 175)
+[2026-05-08 01:49:29] Importing _caddr_t.h.017e0aa4.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (114 of 175)
+[2026-05-08 01:49:29] Importing _blkcnt_t.h.34a194d3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (115 of 175)
+[2026-05-08 01:49:29] Importing _blksize_t.h.0fdacbb3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (116 of 175)
+[2026-05-08 01:49:29] Importing _gid_t.h.e5a55687.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (117 of 175)
+[2026-05-08 01:49:29] Importing _in_addr_t.h.098eb604.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (118 of 175)
+[2026-05-08 01:49:29] Importing _in_port_t.h.9df8ecfa.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (119 of 175)
+[2026-05-08 01:49:29] Importing _ino_t.h.af02d81d.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (120 of 175)
+[2026-05-08 01:49:29] Importing _ino64_t.h.e439a07c.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (121 of 175)
+[2026-05-08 01:49:29] Importing _key_t.h.b406b369.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (122 of 175)
+[2026-05-08 01:49:29] Importing _nlink_t.h.3cfb0507.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (123 of 175)
+[2026-05-08 01:49:29] Importing _useconds_t.h.81277de3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (124 of 175)
+[2026-05-08 01:49:29] Importing _suseconds_t.h.2a3680e0.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (125 of 175)
+[2026-05-08 01:49:29] Importing _fd_def.h.682e3f2f.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (126 of 175)
+[2026-05-08 01:49:29] Importing _fd_setsize.h.bfeb891a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (127 of 175)
+[2026-05-08 01:49:29] Importing _fd_set.h.bfeb891a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (128 of 175)
+[2026-05-08 01:49:29] Importing _fd_clr.h.bfeb891a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (129 of 175)
+[2026-05-08 01:49:29] Importing _fd_zero.h.bfeb891a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (130 of 175)
+[2026-05-08 01:49:29] Importing _fd_isset.h.bfeb891a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (131 of 175)
+[2026-05-08 01:49:29] Importing _fd_copy.h.bfeb891a.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (132 of 175)
+[2026-05-08 01:49:29] Importing _pthread_cond_t.h.d9d5b959.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (133 of 175)
+[2026-05-08 01:49:29] Importing _pthread_condattr_t.h.fea5e9df.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (134 of 175)
+[2026-05-08 01:49:29] Importing _pthread_mutex_t.h.4c0dfbfa.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (135 of 175)
+[2026-05-08 01:49:29] Importing _pthread_mutexattr_t.h.ab33f553.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (136 of 175)
+[2026-05-08 01:49:29] Importing _pthread_once_t.h.a3a91493.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (137 of 175)
+[2026-05-08 01:49:29] Importing _pthread_rwlock_t.h.5347ed40.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (138 of 175)
+[2026-05-08 01:49:29] Importing _pthread_rwlockattr_t.h.421da243.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (139 of 175)
+[2026-05-08 01:49:29] Importing _pthread_t.h.e30dba80.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (140 of 175)
+[2026-05-08 01:49:29] Importing _pthread_key_t.h.12fa2691.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (141 of 175)
+[2026-05-08 01:49:29] Importing _fsblkcnt_t.h.bd89ee10.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (142 of 175)
+[2026-05-08 01:49:29] Importing _fsfilcnt_t.h.3861161e.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (143 of 175)
+[2026-05-08 01:49:29] Importing types.h.51944a13.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (144 of 175)
+[2026-05-08 01:49:29] Importing stat.h.9b5e380d.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (145 of 175)
+[2026-05-08 01:49:29] Importing std_testcase.h.8d2b57f3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (146 of 175)
+[2026-05-08 01:49:29] Importing std_testcase_io.h.b35aee9c.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (147 of 175)
+[2026-05-08 01:49:29] Importing std_testcase.h.dd9016df.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (148 of 175)
+[2026-05-08 01:49:29] Importing _mbstate_t.h.f164fcfb.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (149 of 175)
+[2026-05-08 01:49:29] Importing stdarg.h.9deed5f3.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (150 of 175)
+[2026-05-08 01:49:29] Importing _wctype_t.h.040e2c2d.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (151 of 175)
+[2026-05-08 01:49:29] Importing __wctype.h.68eb8a75.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (152 of 175)
+[2026-05-08 01:49:29] Importing _wctype.h.ebd599a0.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (153 of 175)
+[2026-05-08 01:49:29] Importing wchar.h.02c285c2.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (154 of 175)
+[2026-05-08 01:49:29] Importing CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.b4935b0c_0.trap.tar.zst) (155 of 175)
+[2026-05-08 01:49:29] Importing CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_02.c.0f3a9034.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_02.c.0f3a9034_0.trap.tar.zst) (156 of 175)
+[2026-05-08 01:49:29] Importing CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_03.c.541fe0b1.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_03.c.541fe0b1_0.trap.tar.zst) (157 of 175)
+[2026-05-08 01:49:29] Importing CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_04.c.af8d2242.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_04.c.af8d2242_0.trap.tar.zst) (158 of 175)
+[2026-05-08 01:49:29] Importing CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c.b43c7840.trap (CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c.b43c7840_0.trap.tar.zst) (159 of 175)
+[2026-05-08 01:49:29] Importing CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.268adb3d.trap (CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c.268adb3d_0.trap.tar.zst) (160 of 175)
+[2026-05-08 01:49:29] Importing CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_02.c.5777367d.trap (CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_02.c.5777367d_0.trap.tar.zst) (161 of 175)
+[2026-05-08 01:49:29] Importing CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_03.c.56c4d364.trap (CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_03.c.56c4d364_0.trap.tar.zst) (162 of 175)
+[2026-05-08 01:49:29] Importing CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_04.c.7813b934.trap (CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_04.c.7813b934_0.trap.tar.zst) (163 of 175)
+[2026-05-08 01:49:29] Importing CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c.b51bac14.trap (CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c.b51bac14_0.trap.tar.zst) (164 of 175)
+[2026-05-08 01:49:29] Importing 924055_0.trap.zst (165 of 175)
+[2026-05-08 01:49:29] Importing 36747672_0.trap.zst (166 of 175)
+[2026-05-08 01:49:29] Importing 7913149_0.trap.zst (167 of 175)
+[2026-05-08 01:49:29] Importing 21485388_0.trap.zst (168 of 175)
+[2026-05-08 01:49:29] Importing 59440063_0.trap.zst (169 of 175)
+[2026-05-08 01:49:29] Importing 48147572_0.trap.zst (170 of 175)
+[2026-05-08 01:49:29] Importing 3053301_0.trap.zst (171 of 175)
+[2026-05-08 01:49:29] Importing 10465649_0.trap.zst (172 of 175)
+[2026-05-08 01:49:29] Importing 61638574_0.trap.zst (173 of 175)
+[2026-05-08 01:49:29] Importing 14412154_0.trap.zst (174 of 175)
+[2026-05-08 01:49:29] Importing metadata.trap.gz (175 of 175)
+[2026-05-08 01:49:29] [PROGRESS] dataset import> Merging relations
+[2026-05-08 01:49:29] Merging 1 fragment for 'builtintypes'.
+[2026-05-08 01:49:29] Merged 382 bytes for 'builtintypes'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'unspecifiedtype'.
+[2026-05-08 01:49:29] Merged 1523 bytes (1.49 KiB) for 'unspecifiedtype'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'files'.
+[2026-05-08 01:49:29] Merged 422 bytes for 'files'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'locations_default'.
+[2026-05-08 01:49:29] Merged 87620 bytes (85.57 KiB) for 'locations_default'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'link_targets'.
+[2026-05-08 01:49:29] Merged 26 bytes for 'link_targets'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'usertypes'.
+[2026-05-08 01:49:29] Merged 857 bytes for 'usertypes'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'link_parent'.
+[2026-05-08 01:49:29] Merged 767 bytes for 'link_parent'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'usertypesize'.
+[2026-05-08 01:49:29] Merged 367 bytes for 'usertypesize'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'is_pod_class'.
+[2026-05-08 01:49:29] Merged 135 bytes for 'is_pod_class'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'is_standard_layout_class'.
+[2026-05-08 01:49:29] Merged 135 bytes for 'is_standard_layout_class'.
+[2026-05-08 01:49:29] Merging 1 fragment for 'is_complete'.
+[2026-05-08 01:49:30] Merged 135 bytes for 'is_complete'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'membervariables'.
+[2026-05-08 01:49:30] Merged 2924 bytes (2.86 KiB) for 'membervariables'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'fieldoffsets'.
+[2026-05-08 01:49:30] Merged 1994 bytes (1.95 KiB) for 'fieldoffsets'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'var_decls'.
+[2026-05-08 01:49:30] Merged 11810 bytes (11.53 KiB) for 'var_decls'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'var_def'.
+[2026-05-08 01:49:30] Merged 1087 bytes (1.06 KiB) for 'var_def'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'derivedtypes'.
+[2026-05-08 01:49:30] Merged 1105 bytes (1.08 KiB) for 'derivedtypes'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'pointerishsize'.
+[2026-05-08 01:49:30] Merged 162 bytes for 'pointerishsize'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'member'.
+[2026-05-08 01:49:30] Merged 2230 bytes (2.18 KiB) for 'member'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'namespaces'.
+[2026-05-08 01:49:30] Merged 26 bytes for 'namespaces'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'specialnamequalifyingelements'.
+[2026-05-08 01:49:30] Merged 27 bytes for 'specialnamequalifyingelements'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'mangled_name'.
+[2026-05-08 01:49:30] Merged 1827 bytes (1.78 KiB) for 'mangled_name'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'specifiers'.
+[2026-05-08 01:49:30] Merged 149 bytes for 'specifiers'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'numlines'.
+[2026-05-08 01:49:30] Merged 1150 bytes (1.12 KiB) for 'numlines'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'preprocdirects'.
+[2026-05-08 01:49:30] Merged 20508 bytes (20.03 KiB) for 'preprocdirects'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'preproctext'.
+[2026-05-08 01:49:30] Merged 18381 bytes (17.95 KiB) for 'preproctext'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'preprocfalse'.
+[2026-05-08 01:49:30] Merged 331 bytes for 'preprocfalse'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'preproctrue'.
+[2026-05-08 01:49:30] Merged 991 bytes for 'preproctrue'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'macroinvocations'.
+[2026-05-08 01:49:30] Merged 10447 bytes (10.20 KiB) for 'macroinvocations'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'comments'.
+[2026-05-08 01:49:30] Merged 9486 bytes (9.26 KiB) for 'comments'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'commentbinding'.
+[2026-05-08 01:49:30] Merged 5583 bytes (5.45 KiB) for 'commentbinding'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'containerparent'.
+[2026-05-08 01:49:30] Merged 411 bytes for 'containerparent'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'folders'.
+[2026-05-08 01:49:30] Merged 107 bytes for 'folders'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'preprocpair'.
+[2026-05-08 01:49:30] Merged 6792 bytes (6.63 KiB) for 'preprocpair'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'includes'.
+[2026-05-08 01:49:30] Merged 1193 bytes (1.17 KiB) for 'includes'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'macroparent'.
+[2026-05-08 01:49:30] Merged 1571 bytes (1.53 KiB) for 'macroparent'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'macro_argument_unexpanded'.
+[2026-05-08 01:49:30] Merged 3747 bytes (3.66 KiB) for 'macro_argument_unexpanded'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'macro_argument_expanded'.
+[2026-05-08 01:49:30] Merged 3427 bytes (3.35 KiB) for 'macro_argument_expanded'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'type_mentions'.
+[2026-05-08 01:49:30] Merged 3974 bytes (3.88 KiB) for 'type_mentions'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'arraysizes'.
+[2026-05-08 01:49:30] Merged 287 bytes for 'arraysizes'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'usertype_alias_kind'.
+[2026-05-08 01:49:30] Merged 255 bytes for 'usertype_alias_kind'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'typedefbase'.
+[2026-05-08 01:49:30] Merged 589 bytes for 'typedefbase'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'type_decls'.
+[2026-05-08 01:49:30] Merged 1141 bytes (1.11 KiB) for 'type_decls'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'type_decl_top'.
+[2026-05-08 01:49:30] Merged 340 bytes for 'type_decl_top'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'type_def'.
+[2026-05-08 01:49:30] Merged 155 bytes for 'type_def'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'values'.
+[2026-05-08 01:49:30] Merged 2487 bytes (2.43 KiB) for 'values'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'valuetext'.
+[2026-05-08 01:49:30] Merged 1637 bytes (1.60 KiB) for 'valuetext'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'exprs'.
+[2026-05-08 01:49:30] Merged 9593 bytes (9.37 KiB) for 'exprs'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'expr_types'.
+[2026-05-08 01:49:30] Merged 9305 bytes (9.09 KiB) for 'expr_types'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'valuebind'.
+[2026-05-08 01:49:30] Merged 1848 bytes (1.80 KiB) for 'valuebind'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'typespecifiers'.
+[2026-05-08 01:49:30] Merged 225 bytes for 'typespecifiers'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'varspecifiers'.
+[2026-05-08 01:49:30] Merged 1388 bytes (1.36 KiB) for 'varspecifiers'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'routinetypes'.
+[2026-05-08 01:49:30] Merged 105 bytes for 'routinetypes'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'routinetypeargs'.
+[2026-05-08 01:49:30] Merged 292 bytes for 'routinetypeargs'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'macrolocationbind'.
+[2026-05-08 01:49:30] Merged 1446 bytes (1.41 KiB) for 'macrolocationbind'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'inmacroexpansion'.
+[2026-05-08 01:49:30] Merged 2335 bytes (2.28 KiB) for 'inmacroexpansion'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'functions'.
+[2026-05-08 01:49:30] Merged 1224 bytes (1.20 KiB) for 'functions'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'function_return_type'.
+[2026-05-08 01:49:30] Merged 1401 bytes (1.37 KiB) for 'function_return_type'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'function_prototyped'.
+[2026-05-08 01:49:30] Merged 546 bytes for 'function_prototyped'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'params'.
+[2026-05-08 01:49:30] Merged 5600 bytes (5.47 KiB) for 'params'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'fun_decls'.
+[2026-05-08 01:49:30] Merged 3194 bytes (3.12 KiB) for 'fun_decls'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'fun_decl_specifiers'.
+[2026-05-08 01:49:30] Merged 894 bytes for 'fun_decl_specifiers'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'param_decl_bind'.
+[2026-05-08 01:49:30] Merged 3243 bytes (3.17 KiB) for 'param_decl_bind'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'funspecifiers'.
+[2026-05-08 01:49:30] Merged 880 bytes for 'funspecifiers'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'attributes'.
+[2026-05-08 01:49:30] Merged 796 bytes for 'attributes'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'attribute_arg_value'.
+[2026-05-08 01:49:30] Merged 1600 bytes (1.56 KiB) for 'attribute_arg_value'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'attribute_args'.
+[2026-05-08 01:49:30] Merged 2853 bytes (2.79 KiB) for 'attribute_args'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'funcattributes'.
+[2026-05-08 01:49:30] Merged 536 bytes for 'funcattributes'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'fun_def'.
+[2026-05-08 01:49:30] Merged 117 bytes for 'fun_def'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'stmts'.
+[2026-05-08 01:49:30] Merged 1661 bytes (1.62 KiB) for 'stmts'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'expr_isload'.
+[2026-05-08 01:49:30] Merged 338 bytes for 'expr_isload'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'varbind'.
+[2026-05-08 01:49:30] Merged 2860 bytes (2.79 KiB) for 'varbind'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'exprparents'.
+[2026-05-08 01:49:30] Merged 5152 bytes (5.03 KiB) for 'exprparents'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'compgenerated'.
+[2026-05-08 01:49:30] Merged 567 bytes for 'compgenerated'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'stmtparents'.
+[2026-05-08 01:49:30] Merged 1499 bytes (1.46 KiB) for 'stmtparents'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'if_then'.
+[2026-05-08 01:49:30] Merged 156 bytes for 'if_then'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'funbind'.
+[2026-05-08 01:49:30] Merged 736 bytes for 'funbind'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'if_else'.
+[2026-05-08 01:49:30] Merged 69 bytes for 'if_else'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'blockscope'.
+[2026-05-08 01:49:30] Merged 575 bytes for 'blockscope'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'function_entry_point'.
+[2026-05-08 01:49:30] Merged 263 bytes for 'function_entry_point'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'globalvariables'.
+[2026-05-08 01:49:30] Merged 159 bytes for 'globalvariables'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'var_decl_specifiers'.
+[2026-05-08 01:49:30] Merged 72 bytes for 'var_decl_specifiers'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'exprconv'.
+[2026-05-08 01:49:30] Merged 1753 bytes (1.71 KiB) for 'exprconv'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'conversionkinds'.
+[2026-05-08 01:49:30] Merged 517 bytes for 'conversionkinds'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'iscall'.
+[2026-05-08 01:49:30] Merged 290 bytes for 'iscall'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'attribute_arg_constant'.
+[2026-05-08 01:49:30] Merged 164 bytes for 'attribute_arg_constant'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'bitfield'.
+[2026-05-08 01:49:30] Merged 133 bytes for 'bitfield'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'builtin_functions'.
+[2026-05-08 01:49:30] Merged 25 bytes for 'builtin_functions'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'enumconstants'.
+[2026-05-08 01:49:30] Merged 160 bytes for 'enumconstants'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'initialisers'.
+[2026-05-08 01:49:30] Merged 287 bytes for 'initialisers'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'varattributes'.
+[2026-05-08 01:49:30] Merged 68 bytes for 'varattributes'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'affectedbymacroexpansion'.
+[2026-05-08 01:49:30] Merged 1796 bytes (1.75 KiB) for 'affectedbymacroexpansion'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'localvariables'.
+[2026-05-08 01:49:30] Merged 83 bytes for 'localvariables'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'stmt_decl_bind'.
+[2026-05-08 01:49:30] Merged 129 bytes for 'stmt_decl_bind'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'stmt_decl_entry_bind'.
+[2026-05-08 01:49:30] Merged 125 bytes for 'stmt_decl_entry_bind'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'expr_cond_guard'.
+[2026-05-08 01:49:30] Merged 41 bytes for 'expr_cond_guard'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'expr_cond_true'.
+[2026-05-08 01:49:30] Merged 41 bytes for 'expr_cond_true'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'expr_cond_false'.
+[2026-05-08 01:49:30] Merged 41 bytes for 'expr_cond_false'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'sizeof_bind'.
+[2026-05-08 01:49:30] Merged 174 bytes for 'sizeof_bind'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'extractor_version'.
+[2026-05-08 01:49:30] Merged 28 bytes for 'extractor_version'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'fileannotations'.
+[2026-05-08 01:49:30] Merged 4230 bytes (4.13 KiB) for 'fileannotations'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'compilations'.
+[2026-05-08 01:49:30] Merged 42 bytes for 'compilations'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'compilation_args'.
+[2026-05-08 01:49:30] Merged 2023 bytes (1.98 KiB) for 'compilation_args'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'compilation_expanded_args'.
+[2026-05-08 01:49:30] Merged 2023 bytes (1.98 KiB) for 'compilation_expanded_args'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'compilation_compiling_files'.
+[2026-05-08 01:49:30] Merged 69 bytes for 'compilation_compiling_files'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'compilation_time'.
+[2026-05-08 01:49:30] Merged 512 bytes for 'compilation_time'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'compilation_finished'.
+[2026-05-08 01:49:30] Merged 165 bytes for 'compilation_finished'.
+[2026-05-08 01:49:30] Merging 1 fragment for 'sourceLocationPrefix'.
+[2026-05-08 01:49:30] Merged 18 bytes for 'sourceLocationPrefix'.
+[2026-05-08 01:49:30] Saving string and id pools to disk.
+[2026-05-08 01:49:30] Finished importing TRAP files.
+[2026-05-08 01:49:30] Read 8.78 MiB of uncompressed TRAP data.
+[2026-05-08 01:49:30] Uncompressed relation data size: 1.17 MiB
+[2026-05-08 01:49:30] Relation data size: 282.39 KiB (merge rate: 5.72 MiB/s)
+[2026-05-08 01:49:30] String pool size: 2.22 MiB
+[2026-05-08 01:49:30] ID pool size: 3.75 MiB
+[2026-05-08 01:49:30] [PROGRESS] dataset import> Finished writing database (relations: 282.39 KiB; string pool: 2.22 MiB).
+[2026-05-08 01:49:30] Pausing evaluation to close the cache at sequence stamp o+217
+[2026-05-08 01:49:30] The disk cache is freshly trimmed; leave it be.
+[2026-05-08 01:49:30] Unpausing evaluation
+[2026-05-08 01:49:30] Plumbing command codeql dataset import completed.
+[2026-05-08 01:49:30] [PROGRESS] database finalize> TRAP import complete (890ms).
+[2026-05-08 01:49:30] Running plumbing command: codeql database cleanup -- /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db
+[2026-05-08 01:49:30] [PROGRESS] database cleanup> Cleaning up existing TRAP files after import...
+[2026-05-08 01:49:30] [PROGRESS] database cleanup> TRAP files cleaned up (3ms).
+[2026-05-08 01:49:30] [PROGRESS] database cleanup> Cleaning up scratch directory...
+[2026-05-08 01:49:30] [PROGRESS] database cleanup> Scratch directory cleaned up (17ms).
+[2026-05-08 01:49:30] Running plumbing command: codeql dataset cleanup -- /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/db-cpp
+[2026-05-08 01:49:30] [PROGRESS] dataset cleanup> Cleaning up dataset in /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/db-cpp.
+[2026-05-08 01:49:30] Trimming disk cache at /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/db-cpp/default/cache in mode trim.
+[2026-05-08 01:49:30] Sequence stamp origin is -5916692958700187804
+[2026-05-08 01:49:30] Pausing evaluation to quickly trim memory at sequence stamp o+0
+[2026-05-08 01:49:30] Unpausing evaluation
+[2026-05-08 01:49:30] Pausing evaluation to zealously trim disk at sequence stamp o+1
+[2026-05-08 01:49:30] Unpausing evaluation
+[2026-05-08 01:49:30] Trimming completed (1ms): Trimmed disposable data from cache.
+[2026-05-08 01:49:30] Pausing evaluation to close the cache at sequence stamp o+2
+[2026-05-08 01:49:30] The disk cache is freshly trimmed; leave it be.
+[2026-05-08 01:49:30] Unpausing evaluation
+[2026-05-08 01:49:30] [PROGRESS] dataset cleanup> Trimmed disposable data from cache.
+[2026-05-08 01:49:30] [PROGRESS] dataset cleanup> Finalizing dataset in /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/db-cpp
+[2026-05-08 01:49:30] [DETAILS] dataset cleanup> Finished deleting ID pool from /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db/db-cpp (0ms).
+[2026-05-08 01:49:30] Plumbing command codeql dataset cleanup completed.
+[2026-05-08 01:49:30] Plumbing command codeql database cleanup completed with status 0.
+[2026-05-08 01:49:30] [PROGRESS] database finalize> Finished zipping source archive (276.48 KiB).
+[2026-05-08 01:49:30] Plumbing command codeql database finalize completed.
+[2026-05-08 01:49:30] [PROGRESS] database create> Successfully created database at /Users/sheenie/Desktop/my_cases/taint+buffer_trimmed/cwe121-db.
+[2026-05-08 01:49:30] Terminating normally.

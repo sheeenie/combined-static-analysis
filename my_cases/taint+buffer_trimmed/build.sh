@@ -1,0 +1,11 @@
+#!/bin/sh
+gcc -c CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c
+gcc -c CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_02.c
+gcc -c CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_03.c
+gcc -c CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_04.c
+gcc -c CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c
+gcc -c CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_01.c
+gcc -c CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_02.c
+gcc -c CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_03.c
+gcc -c CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_04.c
+gcc -c CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c
