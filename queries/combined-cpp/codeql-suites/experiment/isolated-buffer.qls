@@ -21,3 +21,26 @@
   from: codeql/cpp-queries
 - query: Security/CWE/CWE-676/DangerousFunctionOverflow.ql
   from: codeql/cpp-queries
+- query: Security/CWE/CWE-676/PotentiallyDangerousFunction.ql
+  from: codeql/cpp-queries
+- query: Security/CWE/CWE-468/IncorrectPointerScaling.ql
+  from: codeql/cpp-queries
+- query: Security/CWE/CWE-468/IncorrectPointerScalingChar.ql
+  from: codeql/cpp-queries
+- query: Security/CWE/CWE-468/IncorrectPointerScalingVoid.ql
+  from: codeql/cpp-queries
+- query: Security/CWE/CWE-468/SuspiciousAddWithSizeof.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-120/MemoryUnsafeFunctionScan.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-125/DangerousWorksWithMultibyteOrWideCharacters.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-193/ConstantSizeArrayOffByOne.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-787/UnsignedToSignedPointerArith.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-788/AccessOfMemoryLocationAfterEndOfBufferUsingStrlen.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-805/BufferAccessWithIncorrectLengthValue.ql
+  from: codeql/cpp-queries
+- query: BufferDangerousApiHotspot.ql

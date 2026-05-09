@@ -21,3 +21,12 @@
   from: codeql/cpp-queries
 - query: Security/CWE/CWE-807/TaintedCondition.ql
   from: codeql/cpp-queries
+- query: Security/CWE/CWE-020/IRUntrustedDataToExternalAPI.ql
+  from: codeql/cpp-queries
+- query: Security/CWE/CWE-079/CgiXss.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-020/LateCheckOfFunctionArgument.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-078/WordexpTainted.ql
+  from: codeql/cpp-queries
+- query: TaintSourceHotspot.ql

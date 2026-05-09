@@ -13,3 +13,14 @@
   from: codeql/cpp-queries
 - query: experimental/Security/CWE/CWE-190/IfStatementAdditionOverflow.ql
   from: codeql/cpp-queries
+- query: Security/CWE/CWE-468/SuspiciousAddWithSizeof.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-369/DivideByZeroUsingReturnValue.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-758/UndefinedOrImplementationDefinedBehavior.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-783/OperatorPrecedenceLogicErrorWhenUseBitwiseOrLogicalOperations.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-783/OperatorPrecedenceLogicErrorWhenUseBoolType.ql
+  from: codeql/cpp-queries
+- query: IntegerArithmeticHotspot.ql

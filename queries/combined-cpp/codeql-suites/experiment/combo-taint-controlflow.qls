@@ -3,3 +3,4 @@
 - import: codeql-suites/experiment/isolated-controlflow.qls
 - query: Security/CWE/CWE-134/UncontrolledFormatString.ql
   from: codeql/cpp-queries
+- query: ComboTaintControlFlowHotspot.ql
