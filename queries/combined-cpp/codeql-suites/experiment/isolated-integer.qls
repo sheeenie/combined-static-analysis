@@ -1,0 +1,15 @@
+- description: Isolated integer-overflow and integer-bound C/C++ queries
+- query: Security/CWE/CWE-190/ArithmeticUncontrolled.ql
+  from: codeql/cpp-queries
+- query: Security/CWE/CWE-190/ArithmeticWithExtremeValues.ql
+  from: codeql/cpp-queries
+- query: Security/CWE/CWE-190/ComparisonWithWiderType.ql
+  from: codeql/cpp-queries
+- query: Security/CWE/CWE-191/UnsignedDifferenceExpressionComparedZero.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-190/AllocMultiplicationOverflow.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-190/DangerousUseOfTransformationAfterOperation.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-190/IfStatementAdditionOverflow.ql
+  from: codeql/cpp-queries

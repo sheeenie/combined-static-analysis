@@ -1,0 +1,9 @@
+- description: Isolated control-flow and condition-sensitive C/C++ queries
+- query: Security/CWE/CWE-807/TaintedCondition.ql
+  from: codeql/cpp-queries
+- query: Security/CWE/CWE-835/InfiniteLoopWithUnsatisfiableExitCondition.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-691/InsufficientControlFlowManagementAfterRefactoringTheCode.ql
+  from: codeql/cpp-queries
+- query: experimental/Security/CWE/CWE-691/InsufficientControlFlowManagementWhenUsingBitOperations.ql
+  from: codeql/cpp-queries
