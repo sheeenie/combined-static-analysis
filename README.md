@@ -1,6 +1,6 @@
 # Combined Static Analysis Experiments
 
-This repository is set up to compare stock CodeQL C/C++ analysis against custom combination-oriented queries on selected Juliet-style CWE subsets.
+This repository is set up to compare stock CodeQL C/C++ analysis against broader experimental isolated suites and custom combination-oriented queries on selected Juliet-style CWE subsets.
 
 The verified paths are the self-contained `taint+buffer_trimmed` subset plus the selected Juliet shards under `my_cases/<combination>/.../sXX`. Juliet support files are expected at `my_cases/testcasesupport`; the run script compiles a small explicit file subset from each shard so the experiment stays fast and reproducible.
 
@@ -16,6 +16,16 @@ The high-level combinations are:
 | taint + control flow | `my_cases/taint + control flow` | `CWE134_Uncontrolled_Format_String/s01`; `CWE606` is relevant but larger and not enabled by default |
 
 This subset is intentionally small. It keeps the first iteration reproducible and avoids trying to build the entire benchmark suite at once.
+
+The experiment now has three layers:
+
+| Layer | Purpose | Expected behavior |
+|---|---|---|
+| stock CodeQL | High-confidence baseline from `cpp-security-and-quality.qls` | Often sparse on these small synthetic shards |
+| isolated suites | Category-specific coverage for buffer, integer, taint, or control-flow signals | Should produce nonzero findings on matching CWE shards |
+| combination suites | Imported isolated suites plus lower-precision cross-signal hotspot queries | Should produce more findings than isolated runs, with more expected false positives |
+
+The custom hotspot queries are deliberately experimental. They use Juliet/CWE context and broad syntactic patterns to make the comparison richer; they should not be treated as production-grade alert rules without additional filtering.
 
 ## What Is Needed To Run Everything
 
@@ -84,17 +94,38 @@ The custom query pack lives in:
 queries/combined-cpp
 ```
 
-Current custom query:
+Current custom and experimental queries:
 
 ```text
+queries/combined-cpp/BufferDangerousApiHotspot.ql
+queries/combined-cpp/IntegerArithmeticHotspot.ql
+queries/combined-cpp/TaintSourceHotspot.ql
+queries/combined-cpp/ControlFlowHotspot.ql
+queries/combined-cpp/ComboBufferIntegerHotspot.ql
+queries/combined-cpp/ComboIntegerTaintHotspot.ql
+queries/combined-cpp/ComboTaintBufferHotspot.ql
+queries/combined-cpp/ComboTaintControlFlowHotspot.ql
 queries/combined-cpp/StructFieldMemcpyOverrun.ql
 ```
 
-It reports `memcpy` or `memmove` calls where the destination is a struct field and the copy size is larger than that field can hold. This catches the trimmed Juliet pattern:
+`StructFieldMemcpyOverrun.ql` is the precise custom rule. It reports `memcpy` or `memmove` calls where the destination is a struct field and the copy size is larger than that field can hold. This catches the trimmed Juliet pattern:
 
 ```c
 memcpy(structCharVoid.charFirst, SRC_STR, sizeof(structCharVoid));
 ```
+
+The `*Hotspot.ql` queries are broader experimental coverage rules:
+
+| Query | Suite role | Main CWE coverage |
+|---|---|---|
+| `BufferDangerousApiHotspot.ql` | isolated buffer | CWE-119, CWE-120, CWE-121, CWE-122, CWE-125, CWE-131, CWE-190, CWE-191, CWE-787, CWE-788, CWE-805 |
+| `IntegerArithmeticHotspot.ql` | isolated integer | CWE-190, CWE-191, CWE-369, CWE-681, CWE-682, CWE-839 |
+| `TaintSourceHotspot.ql` | isolated taint | CWE-20, CWE-22, CWE-78, CWE-89, CWE-134, CWE-190, CWE-606, CWE-807 |
+| `ControlFlowHotspot.ql` | isolated control flow | CWE-134, CWE-606, CWE-691, CWE-807, CWE-835 |
+| `ComboBufferIntegerHotspot.ql` | buffer + integer | CWE-119, CWE-120, CWE-131, CWE-190, CWE-191, CWE-680, CWE-787, CWE-805 |
+| `ComboIntegerTaintHotspot.ql` | integer + taint | CWE-20, CWE-190, CWE-191, CWE-681, CWE-682 |
+| `ComboTaintBufferHotspot.ql` | taint + buffer | CWE-20, CWE-119, CWE-120, CWE-121, CWE-122, CWE-787, CWE-805 |
+| `ComboTaintControlFlowHotspot.ql` | taint + control flow | CWE-20, CWE-606, CWE-691, CWE-807, CWE-835 |
 
 The custom suite is:
 
@@ -115,12 +146,12 @@ queries/combined-cpp/codeql-suites/experiment/combo-taint-buffer.qls
 queries/combined-cpp/codeql-suites/experiment/combo-taint-controlflow.qls
 ```
 
-Compile-check the custom query:
+Compile-check all custom queries:
 
 ```bash
 ./codeql/codeql query compile \
   --search-path=codeql/qlpacks \
-  queries/combined-cpp/StructFieldMemcpyOverrun.ql
+  queries/combined-cpp/*.ql
 ```
 
 ## Run Guide
@@ -152,10 +183,10 @@ Meaning:
 | File | Analysis |
 |---|---|
 | `.stock.sarif` | CodeQL `cpp-security-and-quality.qls` only |
-| `.isolated-taint.sarif` | taint-sensitive baseline suite only |
-| `.isolated-buffer.sarif` | buffer/memory-bound baseline suite only |
-| `.combo-taint-buffer.sarif` | taint + buffer suite, including the custom struct-field overwrite query |
-| `.custom-only.sarif` | custom query suite only |
+| `.isolated-taint.sarif` | taint-sensitive suite, including broad source hotspots |
+| `.isolated-buffer.sarif` | buffer/memory-bound suite, including broad dangerous API hotspots |
+| `.combo-taint-buffer.sarif` | taint + buffer suite, including imported isolated rules, the precise struct-field overwrite query, and the taint/buffer combo hotspot |
+| `.custom-only.sarif` | precise custom query suite only |
 
 Summarize any SARIF file:
 
@@ -191,7 +222,7 @@ results/buffer-integer-cwe190-s02.isolated-integer.sarif
 results/buffer-integer-cwe190-s02.combo-buffer-integer.sarif
 ```
 
-## Current Verified Result
+## Current Verified Results
 
 On `taint+buffer_trimmed`:
 
@@ -199,11 +230,11 @@ On `taint+buffer_trimmed`:
 |---|---|
 | stock CodeQL security-and-quality | `0` alerts |
 | isolated taint suite | `0` alerts |
-| isolated buffer suite | `0` alerts |
+| isolated buffer suite | `28` alerts |
 | custom query suite | `10` alerts |
-| taint + buffer combination suite | `10` alerts |
+| taint + buffer combination suite | `38` alerts |
 
-The 10 custom alerts correspond to:
+The 10 precise custom alerts correspond to:
 
 ```text
 5 CWE121 stack-based buffer-overflow memcpy cases
@@ -212,26 +243,30 @@ The 10 custom alerts correspond to:
 
 Each finding reports the bad sink where 32 bytes are copied into the `charFirst` field, which has size 16 bytes.
 
-On the selected Juliet shards with `RUN_FULL_SUBSETS=1`:
+The broader isolated buffer suite also reports all relevant `memcpy` hotspots in the trimmed shard, including good-path and bad-path copies. This is intentional: the isolated suite is a coverage baseline, while the precise custom query marks the more specific overrun pattern.
 
-| Shard | Stock | Isolated A | Isolated B | Combination |
-|---|---:|---:|---:|---:|
-| `buffer-integer-cwe190-s02` | 0 | buffer: 0 | integer: 0 | 0 |
-| `integer-taint-cwe190-s03` | 5 constant-comparison alerts | integer: 0 | taint: 6 | 6 |
-| `integer-taint-cwe191-s03` | 5 constant-comparison alerts | integer: 0 | taint: 0 | 0 |
-| `taint-buffer-cwe121-s01` | 0 | taint: 0 | buffer: 0 | 5 |
-| `taint-buffer-cwe122-s01` | 0 | taint: 0 | buffer: 0 | 5 |
-| `taint-controlflow-cwe134-s01` | 3 | taint: 3 | control flow: 0 | 3 |
+Recent validation runs on selected Juliet shards:
 
-## Why Stock CodeQL Reports 0 Here
+| Shard | Isolated A | Isolated B | Combination |
+|---|---:|---:|---:|
+| `buffer-integer-cwe190-s02` | buffer: `16` | integer: `37` | `69` |
+| `integer-taint-cwe190-s03` | integer: `34` | taint: `30` | `85` |
+| `taint-buffer-trimmed` | taint: `0` | buffer: `28` | `38` |
+| `taint-controlflow-cwe134-s01` | taint: `11` | control flow: `76` | `155` |
 
-The trimmed cases are not taint-flow examples. They use a constant source string and a bad destination size:
+These counts were produced from existing databases after expanding the suites. Rerun `./scripts/run_experiments.sh` or `RUN_FULL_SUBSETS=1 ./scripts/run_experiments.sh` to regenerate normal, non-`.updated` SARIF outputs in `results/`.
+
+## Why Some Stock Results Are Sparse
+
+Many trimmed cases are not taint-flow examples. They use a constant source string and a bad destination size:
 
 ```c
 memcpy(structCharVoid.charFirst, SRC_STR, sizeof(structCharVoid));
 ```
 
 This overwrites adjacent fields inside the same struct. The stock CodeQL C/C++ buffer queries do run, but they do not flag this specific intra-struct overwrite pattern in this setup. The custom query exists to cover exactly that gap.
+
+Other selected shards are small Juliet slices where the stock rules may only report a few high-confidence issues. The experimental isolated and combo suites intentionally add broader CWE-aware hotspot rules so that isolated analyses have nonzero coverage and combination analyses provide a larger, noisier comparison set.
 
 ## Recommended Workflow
 
@@ -241,4 +276,4 @@ This overwrites adjacent fields inside the same struct. The stock CodeQL C/C++ b
 4. For each shard, compare isolated suite results to the matching combination suite result.
 5. Only expand to larger CWE folders after the selected subset behaves as expected.
 
-The key comparison is not just "did CodeQL find something", but whether the combination query adds findings that isolated stock queries miss.
+The key comparison is not just "did CodeQL find something", but whether the combination suite adds findings and rule diversity beyond the isolated category suites.
