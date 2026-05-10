@@ -51,6 +51,10 @@ The one top-level `CWE606_Unchecked_Loop_Condition` Makefile uses:
 
 So the practical fix is to add the Juliet `testcasesupport` directory directly under `my_cases/`. The helper script currently compiles selected files directly instead of invoking each shard's broad `make all`, because those Makefiles can build hundreds of test cases per shard.
 
+For each selected shard the helper now compiles the full set of single-file Juliet flow variants `_01.c` through `_18.c` (basic, `if/else`, `switch`, function-pointer, and similar control-flow patterns). Multi-file flow variants (`_21+`, with `a`/`b`/`c` splits) are still excluded because they require coordinated multi-translation-unit builds and would inflate runtime without changing the comparison shape.
+
+For each selected shard the helper now compiles the full set of single-file Juliet flow variants `_01.c` through `_18.c` (basic, `if/else`, `switch`, function-pointer, etc.). Multi-file flow variants (`_21+`, with `a`/`b`/`c` splits) are still excluded because they require coordinated multi-translation-unit builds and would inflate runtime without changing the comparison shape.
+
 After that, the experiment matrix is:
 
 | Benchmark shard | Isolated baseline A | Isolated baseline B | Combination run |
@@ -194,6 +198,24 @@ Summarize any SARIF file:
 python3 scripts/summarize_sarif.py results/taint-buffer-trimmed.combo-taint-buffer.sarif
 ```
 
+The summarizer classifies each finding as **TP**, **FP**, or **?** by looking up the source file and line in the SARIF result and matching the enclosing function name against Juliet's labelling convention:
+
+- function name contains `bad` and not `good` → **TP** (true positive — finding is in or reachable from a Juliet `bad` sink)
+- function name contains `good` and not `bad` → **FP** (false positive — finding is in a Juliet `good*`/`goodG2B`/`goodB2G` variant that is intentionally safe)
+- otherwise (top-level, shared helper such as `printIntLine`/`globalReturnsTrue`, or unresolved location) → **?**
+
+The output now includes a header line with `TP / FP / ? / precision`, a per-rule breakdown of the same three buckets, and an inline `[TP]`/`[FP]`/`[?]` tag plus the resolved enclosing function name on every per-finding row. When multiple SARIFs are passed in one invocation, a final `OVERALL` line aggregates across all files.
+
+Example header:
+
+```text
+results/taint-buffer-trimmed.isolated-buffer.sarif
+  tool: CodeQL 2.25.4
+  results: 28   TP: 10   FP: 18   ?: 0   precision (TP/(TP+FP)): 35.7%
+```
+
+This labelling is only meaningful on Juliet-style benchmarks. On real codebases without `bad`/`good` naming, every finding will fall into the `?` bucket.
+
 ## Full Subset Runs
 
 The script contains selected Juliet shards, but does not run them by default because they require `my_cases/testcasesupport`.
@@ -224,37 +246,55 @@ results/buffer-integer-cwe190-s02.combo-buffer-integer.sarif
 
 ## Current Verified Results
 
-On `taint+buffer_trimmed`:
+The numbers below come from a clean `RUN_FULL_SUBSETS=1 ./scripts/run_experiments.sh` run that compiled Juliet flow variants `_01..._18` for each selected shard. TP/FP labels are derived by `scripts/summarize_sarif.py` from the enclosing function name (`bad*` ⇒ TP, `good*` ⇒ FP).
 
-| Analysis | Expected result |
-|---|---|
-| stock CodeQL security-and-quality | `0` alerts |
-| isolated taint suite | `0` alerts |
-| isolated buffer suite | `28` alerts |
-| custom query suite | `10` alerts |
-| taint + buffer combination suite | `38` alerts |
+### `taint-buffer-trimmed` (the self-contained verification case)
 
-The 10 precise custom alerts correspond to:
+| Analysis | Total | TP | FP | Precision |
+|---|---:|---:|---:|---:|
+| stock CodeQL security-and-quality | 0 | 0 | 0 | – |
+| isolated taint suite | 0 | 0 | 0 | – |
+| isolated buffer suite | 28 | 10 | 18 | 35.7% |
+| custom query suite (`StructFieldMemcpyOverrun.ql`) | 10 | 10 | 0 | **100.0%** |
+| taint + buffer combination suite | 38 | 20 | 18 | 52.6% |
 
-```text
-5 CWE121 stack-based buffer-overflow memcpy cases
-5 CWE122 heap-based buffer-overflow memcpy cases
-```
+The 10 precise custom alerts correspond to 5 CWE121 stack-based and 5 CWE122 heap-based `memcpy` overruns where 32 bytes are copied into the 16-byte `charFirst` field. The isolated buffer suite additionally fires on the matching `good1`/`good2` variants — that is the precision/recall tradeoff between the precise custom rule and the broader hotspot rule.
 
-Each finding reports the bad sink where 32 bytes are copied into the `charFirst` field, which has size 16 bytes.
+### Selected Juliet shards (`_01..._18` flow variants per shard)
 
-The broader isolated buffer suite also reports all relevant `memcpy` hotspots in the trimmed shard, including good-path and bad-path copies. This is intentional: the isolated suite is a coverage baseline, while the precise custom query marks the more specific overrun pattern.
+| Shard | Suite | Total | TP | FP | Precision |
+|---|---|---:|---:|---:|---:|
+| `buffer-integer-cwe190-s02` | stock | 13 | 3 | 10 | 23.1% |
+| `buffer-integer-cwe190-s02` | isolated-buffer | 100 | 36 | 64 | 36.0% |
+| `buffer-integer-cwe190-s02` | isolated-integer | 233 | 73 | 160 | 31.3% |
+| `buffer-integer-cwe190-s02` | combo-buffer-integer | 433 | 145 | 288 | 33.5% |
+| `integer-taint-cwe190-s03` | stock | 31 | 2 | 29 | 6.5% |
+| `integer-taint-cwe190-s03` | isolated-integer | 216 | 56 | 160 | 25.9% |
+| `integer-taint-cwe190-s03` | isolated-taint | 185 | 89 | 96 | 48.1% |
+| `integer-taint-cwe190-s03` | combo-integer-taint | 535 | 183 | 352 | 34.2% |
+| `integer-taint-cwe191-s03` | stock | 31 | 2 | 29 | 6.5% |
+| `integer-taint-cwe191-s03` | isolated-integer | 199 | 39 | 160 | 19.6% |
+| `integer-taint-cwe191-s03` | isolated-taint | 50 | 18 | 32 | 36.0% |
+| `integer-taint-cwe191-s03` | combo-integer-taint | 416 | 96 | 320 | 23.1% |
+| `taint-buffer-cwe121-s01` | stock | 3 | 1 | 2 | 33.3% |
+| `taint-buffer-cwe121-s01` | isolated-taint | 0 | 0 | 0 | – |
+| `taint-buffer-cwe121-s01` | isolated-buffer | 51 | 19 | 32 | 37.3% |
+| `taint-buffer-cwe121-s01` | combo-taint-buffer | 69 | 37 | 32 | **53.6%** |
+| `taint-buffer-cwe122-s01` | stock | 3 | 1 | 2 | 33.3% |
+| `taint-buffer-cwe122-s01` | isolated-taint | 0 | 0 | 0 | – |
+| `taint-buffer-cwe122-s01` | isolated-buffer | 51 | 19 | 32 | 37.3% |
+| `taint-buffer-cwe122-s01` | combo-taint-buffer | 69 | 37 | 32 | **53.6%** |
+| `taint-controlflow-cwe134-s01` | stock | 31 | 21 | 10 | **67.7%** |
+| `taint-controlflow-cwe134-s01` | isolated-taint | 68 | 36 | 32 | 52.9% |
+| `taint-controlflow-cwe134-s01` | isolated-controlflow | 498 | 158 | 340 | 31.7% |
+| `taint-controlflow-cwe134-s01` | combo-taint-controlflow | 1006 | 352 | 654 | 35.0% |
 
-Recent validation runs on selected Juliet shards:
+Patterns to notice in the table:
 
-| Shard | Isolated A | Isolated B | Combination |
-|---|---:|---:|---:|
-| `buffer-integer-cwe190-s02` | buffer: `16` | integer: `37` | `69` |
-| `integer-taint-cwe190-s03` | integer: `34` | taint: `30` | `85` |
-| `taint-buffer-trimmed` | taint: `0` | buffer: `28` | `38` |
-| `taint-controlflow-cwe134-s01` | taint: `11` | control flow: `76` | `155` |
-
-These counts were produced from existing databases after expanding the suites. Rerun `./scripts/run_experiments.sh` or `RUN_FULL_SUBSETS=1 ./scripts/run_experiments.sh` to regenerate normal, non-`.updated` SARIF outputs in `results/`.
+- The combination suite always raises TP coverage versus either isolated suite (e.g. CWE-121: `19 → 37` TP), at the cost of more FPs — exactly the tradeoff the experiment is designed to surface.
+- The precise custom rule on the trimmed case is the only suite that hits 100% precision; every broader hotspot rule lands on at least some `good*` variants.
+- Stock CodeQL on the small Juliet shards is sparse and mixed (0 TP on the trimmed case, 21/31 on `CWE134` which has high-quality library queries for tainted format strings).
+- For `CWE121`/`CWE122` the isolated-taint suite produces zero findings, so the combination's TP gain comes entirely from the cross-signal hotspot rules added in the combo suite, not from the imported isolated taint queries.
 
 ## Why Some Stock Results Are Sparse
 

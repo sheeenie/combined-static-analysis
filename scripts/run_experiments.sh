@@ -145,7 +145,22 @@ run_selected_full_subsets() {
     "$BUFFER_INTEGER_SUITE" "combo-buffer-integer" \
     CWE190_Integer_Overflow__int_connect_socket_add_01.c \
     CWE190_Integer_Overflow__int_connect_socket_add_02.c \
-    CWE190_Integer_Overflow__int_connect_socket_add_03.c
+    CWE190_Integer_Overflow__int_connect_socket_add_03.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_04.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_05.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_06.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_07.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_08.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_09.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_10.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_11.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_12.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_13.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_14.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_15.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_16.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_17.c \
+    CWE190_Integer_Overflow__int_connect_socket_add_18.c
 
   run_selected_files_case_if_available \
     "integer-taint-cwe190-s03" \
@@ -155,7 +170,22 @@ run_selected_full_subsets() {
     "$INTEGER_TAINT_SUITE" "combo-integer-taint" \
     CWE190_Integer_Overflow__int_fgets_multiply_01.c \
     CWE190_Integer_Overflow__int_fgets_multiply_02.c \
-    CWE190_Integer_Overflow__int_fgets_multiply_03.c
+    CWE190_Integer_Overflow__int_fgets_multiply_03.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_04.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_05.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_06.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_07.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_08.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_09.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_10.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_11.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_12.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_13.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_14.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_15.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_16.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_17.c \
+    CWE190_Integer_Overflow__int_fgets_multiply_18.c
 
   run_selected_files_case_if_available \
     "integer-taint-cwe191-s03" \
@@ -165,7 +195,22 @@ run_selected_full_subsets() {
     "$INTEGER_TAINT_SUITE" "combo-integer-taint" \
     CWE191_Integer_Underflow__int_rand_multiply_01.c \
     CWE191_Integer_Underflow__int_rand_multiply_02.c \
-    CWE191_Integer_Underflow__int_rand_multiply_03.c
+    CWE191_Integer_Underflow__int_rand_multiply_03.c \
+    CWE191_Integer_Underflow__int_rand_multiply_04.c \
+    CWE191_Integer_Underflow__int_rand_multiply_05.c \
+    CWE191_Integer_Underflow__int_rand_multiply_06.c \
+    CWE191_Integer_Underflow__int_rand_multiply_07.c \
+    CWE191_Integer_Underflow__int_rand_multiply_08.c \
+    CWE191_Integer_Underflow__int_rand_multiply_09.c \
+    CWE191_Integer_Underflow__int_rand_multiply_10.c \
+    CWE191_Integer_Underflow__int_rand_multiply_11.c \
+    CWE191_Integer_Underflow__int_rand_multiply_12.c \
+    CWE191_Integer_Underflow__int_rand_multiply_13.c \
+    CWE191_Integer_Underflow__int_rand_multiply_14.c \
+    CWE191_Integer_Underflow__int_rand_multiply_15.c \
+    CWE191_Integer_Underflow__int_rand_multiply_16.c \
+    CWE191_Integer_Underflow__int_rand_multiply_17.c \
+    CWE191_Integer_Underflow__int_rand_multiply_18.c
 
   run_selected_files_case_if_available \
     "taint-buffer-cwe121-s01" \
@@ -177,7 +222,20 @@ run_selected_full_subsets() {
     CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_02.c \
     CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_03.c \
     CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_04.c \
-    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_06.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_07.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_08.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_09.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_10.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_11.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_12.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_13.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_14.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_15.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_16.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_17.c \
+    CWE121_Stack_Based_Buffer_Overflow__char_type_overrun_memcpy_18.c
 
   run_selected_files_case_if_available \
     "taint-buffer-cwe122-s01" \
@@ -189,7 +247,20 @@ run_selected_full_subsets() {
     CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_02.c \
     CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_03.c \
     CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_04.c \
-    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_05.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_06.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_07.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_08.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_09.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_10.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_11.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_12.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_13.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_14.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_15.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_16.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_17.c \
+    CWE122_Heap_Based_Buffer_Overflow__char_type_overrun_memcpy_18.c
 
   run_selected_files_case_if_available \
     "taint-controlflow-cwe134-s01" \
@@ -199,7 +270,22 @@ run_selected_full_subsets() {
     "$TAINT_CONTROLFLOW_SUITE" "combo-taint-controlflow" \
     CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_01.c \
     CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_02.c \
-    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_03.c
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_03.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_04.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_05.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_06.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_07.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_08.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_09.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_10.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_11.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_12.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_13.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_14.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_15.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_16.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_17.c \
+    CWE134_Uncontrolled_Format_String__char_connect_socket_fprintf_18.c
 }
 
 main() {
