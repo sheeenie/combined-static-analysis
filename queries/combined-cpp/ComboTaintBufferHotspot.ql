@@ -17,6 +17,7 @@
  */
 
 import cpp
+import LibpngSources
 
 predicate inputApi(FunctionCall call) {
   call.getTarget().hasGlobalName([
@@ -24,6 +25,8 @@ predicate inputApi(FunctionCall call) {
     "getchar", "getenv", "atoi", "atol", "atoll", "strtol", "strtoul", "strtoll",
     "strtoull"
   ])
+  or
+  libpngInputApi(call)
 }
 
 predicate bufferApi(FunctionCall call) {
@@ -34,18 +37,9 @@ predicate bufferApi(FunctionCall call) {
   ])
 }
 
-predicate relevantFile(FunctionCall call) {
-  exists(string path |
-    path = call.getFile().getRelativePath() and
-    (path.matches("%CWE119%") or path.matches("%CWE120%") or path.matches("%CWE121%") or
-      path.matches("%CWE122%") or path.matches("%CWE787%") or path.matches("%CWE805%"))
-  )
-}
-
 from FunctionCall buffer, Function f, FunctionCall input
 where
   bufferApi(buffer) and
-  relevantFile(buffer) and
   f = buffer.getEnclosingFunction() and
   input.getEnclosingFunction() = f and
   inputApi(input)

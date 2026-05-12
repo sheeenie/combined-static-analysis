@@ -15,6 +15,7 @@
  */
 
 import cpp
+import LibpngSources
 
 predicate arithmeticExpr(Expr e) {
   e instanceof AddExpr or e instanceof SubExpr or e instanceof MulExpr or e instanceof DivExpr or
@@ -27,20 +28,13 @@ predicate inputApi(FunctionCall call) {
     "getchar", "getenv", "atoi", "atol", "atoll", "strtol", "strtoul", "strtoll",
     "strtoull", "rand"
   ])
-}
-
-predicate relevantFile(Expr e) {
-  exists(string path |
-    path = e.getFile().getRelativePath() and
-    (path.matches("%CWE190%") or path.matches("%CWE191%") or path.matches("%CWE681%") or
-      path.matches("%CWE682%"))
-  )
+  or
+  libpngInputApi(call)
 }
 
 from Expr arithmetic, Function f, FunctionCall input
 where
   arithmeticExpr(arithmetic) and
-  relevantFile(arithmetic) and
   f = arithmetic.getEnclosingFunction() and
   input.getEnclosingFunction() = f and
   inputApi(input)

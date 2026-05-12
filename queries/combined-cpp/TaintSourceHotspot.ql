@@ -18,23 +18,7 @@
  */
 
 import cpp
-
-predicate taintRelevantFile(FunctionCall call) {
-  exists(string path |
-    path = call.getFile().getRelativePath() and
-    (
-      path.matches("%CWE020%") or
-      path.matches("%CWE022%") or
-      path.matches("%CWE078%") or
-      path.matches("%CWE089%") or
-      path.matches("%CWE134%") or
-      path.matches("%CWE190%") or
-      path.matches("%CWE191%") or
-      path.matches("%CWE606%") or
-      path.matches("%CWE807%")
-    )
-  )
-}
+import LibpngSources
 
 predicate inputApi(FunctionCall call) {
   call.getTarget().hasGlobalName([
@@ -42,10 +26,12 @@ predicate inputApi(FunctionCall call) {
     "getchar", "getenv", "atoi", "atol", "atoll", "strtol", "strtoul", "strtoll",
     "strtoull", "rand"
   ])
+  or
+  libpngInputApi(call)
 }
 
 from FunctionCall call
-where inputApi(call) and taintRelevantFile(call)
+where inputApi(call)
 select call,
   "This call to '" + call.getTarget().getName() +
     "' is treated as an external-input hotspot by the experimental taint suite."

@@ -29,6 +29,7 @@ SHARD_ROOTS: dict[str, Path] = {
     "integer-taint-cwe191-s03": Path("my_cases/integer + taint/CWE191_Integer_Underflow/s03"),
     "taint-buffer-cwe121-s01": Path("my_cases/taint + buffer/CWE121_Stack_Based_Buffer_Overflow/s01"),
     "taint-buffer-cwe122-s01": Path("my_cases/taint + buffer/CWE122_Heap_Based_Buffer_Overflow/s01"),
+    "taint-buffer-cwe129-fgets-s01": Path("my_cases/taint + buffer/CWE121_Stack_Based_Buffer_Overflow/s01"),
     "taint-buffer-trimmed": Path("my_cases/taint+buffer_trimmed"),
     "taint-controlflow-cwe134-s01": Path("my_cases/taint + control flow/CWE134_Uncontrolled_Format_String/s01"),
 }
@@ -199,9 +200,131 @@ def summarize(path: Path) -> int:
     return total
 
 
+def count_expected_in_corpus(corpus: Path, restrict_to: set[Path] | None = None) -> tuple[int, int]:
+    """Walk `corpus` and count Juliet-labelled functions.
+    Returns (num_bad, num_good) — i.e. ground-truth TP-sites and TN-sites.
+    Counts each function once. Functions whose names contain neither
+    'bad' nor 'good' (helpers, main, etc.) are ignored.
+
+    If `restrict_to` is given, only consider source files in that set.
+    Used to scope recall to the files actually present in the analyzed
+    database, not the full corpus on disk."""
+    bad = 0
+    good = 0
+    if restrict_to is not None:
+        sources = list(restrict_to)
+    else:
+        sources = list(corpus.rglob("*.c")) + list(corpus.rglob("*.cpp")) + list(corpus.rglob("*.cc"))
+    for src in sources:
+        for _start, name in function_ranges(src):
+            label = classify(name)
+            if label == "TP":
+                bad += 1
+            elif label == "FP":
+                good += 1
+    return bad, good
+
+
+def sarif_artifact_paths(sarif_paths: list[Path]) -> set[Path]:
+    """Return the union of source files referenced by *results* across all
+    given SARIFs. We deliberately ignore the run.artifacts[] metadata array
+    because CodeQL records every file in --source-root there, including
+    files the build command never compiled — which would inflate the
+    recall denominator. Result locations only ever appear for files the
+    database actually analyzed."""
+    files: set[Path] = set()
+    for sp in sarif_paths:
+        try:
+            with sp.open(encoding="utf-8") as f:
+                sarif = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            continue
+        run = sarif["runs"][0]
+        for r in run.get("results", []):
+            uri = (
+                r.get("locations", [{}])[0]
+                .get("physicalLocation", {})
+                .get("artifactLocation", {})
+                .get("uri", "")
+            )
+            if not uri:
+                continue
+            resolved = resolve_artifact(uri, sp)
+            if resolved is not None and resolved.suffix in {".c", ".cpp", ".cc"}:
+                files.add(resolved)
+    return files
+
+
+def classify_results(path: Path) -> tuple[Counter, set[tuple[str, str]]]:
+    """Return (label_counts, set of (file, bad_function) tuples actually flagged).
+    The second value is used as the numerator for recall."""
+    with path.open(encoding="utf-8") as f:
+        sarif = json.load(f)
+    run = sarif["runs"][0]
+    counts: Counter = Counter()
+    flagged_bad: set[tuple[str, str]] = set()
+    for result in run.get("results", []):
+        loc = result.get("locations", [{}])[0].get("physicalLocation", {})
+        artifact = loc.get("artifactLocation", {}).get("uri", "")
+        line = loc.get("region", {}).get("startLine", 0) or 0
+        resolved = resolve_artifact(artifact, path)
+        func = enclosing_function(resolved, line) if (resolved and line) else None
+        label = classify(func)
+        counts[label] += 1
+        if label == "TP" and func:
+            flagged_bad.add((artifact, func))
+    return counts, flagged_bad
+
+
+def compare(corpus_arg: str, sarif_args: list[str]) -> int:
+    corpus = Path(corpus_arg)
+    if not corpus.exists():
+        print(f"corpus not found: {corpus}", file=sys.stderr)
+        return 2
+    # Scope ground-truth counting to files that the SARIFs actually reference,
+    # so recall is computed against what the database saw — not against every
+    # .c file sitting under `corpus` on disk.
+    analyzed = sarif_artifact_paths([Path(a) for a in sarif_args])
+    if analyzed:
+        bad_total, good_total = count_expected_in_corpus(corpus, restrict_to=analyzed)
+        scope = f"{len(analyzed)} analyzed file(s)"
+    else:
+        bad_total, good_total = count_expected_in_corpus(corpus)
+        scope = "full corpus walk (no artifacts in SARIF)"
+    print(f"\nCorpus: {corpus}")
+    print(f"  ground truth ({scope}): bad-functions={bad_total}  good-functions={good_total}")
+
+    header = f"  {'suite':<32} {'results':>8} {'TP':>5} {'FP':>5} {'?':>5}  {'precision':>10}  {'recall':>8}"
+    print()
+    print(header)
+    print("  " + "-" * (len(header) - 2))
+    for arg in sarif_args:
+        path = Path(arg)
+        counts, flagged_bad = classify_results(path)
+        tp = counts["TP"]
+        fp = counts["FP"]
+        unk = counts["?"]
+        total = tp + fp + unk
+        prec = (tp / (tp + fp) * 100.0) if (tp + fp) else 0.0
+        rec = (len(flagged_bad) / bad_total * 100.0) if bad_total else 0.0
+        # Suite label from the SARIF filename: <shard>.<suite>.sarif → <suite>
+        stem = path.name[:-len(".sarif")] if path.name.endswith(".sarif") else path.name
+        suite = stem.rsplit(".", 1)[1] if "." in stem else stem
+        print(f"  {suite:<32} {total:>8} {tp:>5} {fp:>5} {unk:>5}  {prec:>9.1f}%  {rec:>7.1f}%")
+    return 0
+
+
 def main() -> int:
+    if len(sys.argv) >= 4 and sys.argv[1] == "--compare":
+        return compare(sys.argv[2], sys.argv[3:])
+
     if len(sys.argv) < 2:
-        print("usage: summarize_sarif.py <file.sarif> [file.sarif ...]", file=sys.stderr)
+        print(
+            "usage:\n"
+            "  summarize_sarif.py <file.sarif> [file.sarif ...]\n"
+            "  summarize_sarif.py --compare <corpus_dir> <file.sarif> [file.sarif ...]",
+            file=sys.stderr,
+        )
         return 2
 
     grand_total = 0

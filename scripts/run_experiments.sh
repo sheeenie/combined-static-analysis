@@ -5,6 +5,25 @@ CODEQL="${CODEQL:-./codeql/codeql}"
 DB_ROOT="${DB_ROOT:-codeql-dbs}"
 RESULT_ROOT="${RESULT_ROOT:-results}"
 RUN_FULL_SUBSETS="${RUN_FULL_SUBSETS:-0}"
+RUN_LIBPNG="${RUN_LIBPNG:-1}"
+LIBPNG_ONLY="${LIBPNG_ONLY:-0}"
+
+TARGETS_ROOT="${TARGETS_ROOT:-targets}"
+LIBPNG_REPO="${LIBPNG_REPO:-https://github.com/pnggroup/libpng.git}"
+# Space-separated list of tags. Defaults give one clean baseline plus two
+# vuln/fix pairs so the design-science TP/FP comparison has a mechanical
+# diff arm in addition to the CVE-site coverage check:
+#   v1.6.37 — clean modern baseline (FP-shape measurement).
+#   v1.6.34 — pre-fix for CVE-2018-13785 (integer overflow in
+#             png_check_chunk_length → buffer size).
+#   v1.6.36 — fix tag for CVE-2018-13785. Findings present at v1.6.34 but
+#             absent at v1.6.36 are TP candidates without manual triage.
+#   v1.2.53 — legacy 1.2.x; pre-fix for CVE-2015-8126 (heap overflow in
+#             png_handle_PLTE) and CVE-2015-8540 (OOB read in
+#             png_check_keyword).
+#   v1.2.54 — fix tag for CVE-2015-8126. (CVE-2015-8540 was fixed in 1.2.55.)
+# Override with LIBPNG_TAGS="vX.Y.Z ...".
+LIBPNG_TAGS="${LIBPNG_TAGS:-v1.6.37 v1.6.34 v1.6.36 v1.2.53 v1.2.54}"
 
 STOCK_SUITE="${STOCK_SUITE:-codeql/qlpacks/codeql/cpp-queries/1.6.2/codeql-suites/cpp-security-and-quality.qls}"
 CUSTOM_SUITE="${CUSTOM_SUITE:-queries/combined-cpp/codeql-suites/custom-combinations.qls}"
@@ -18,6 +37,7 @@ CONTROLFLOW_SUITE="${CONTROLFLOW_SUITE:-$SUITE_ROOT/isolated-controlflow.qls}"
 BUFFER_INTEGER_SUITE="${BUFFER_INTEGER_SUITE:-$SUITE_ROOT/combo-buffer-integer.qls}"
 INTEGER_TAINT_SUITE="${INTEGER_TAINT_SUITE:-$SUITE_ROOT/combo-integer-taint.qls}"
 TAINT_BUFFER_SUITE="${TAINT_BUFFER_SUITE:-$SUITE_ROOT/combo-taint-buffer.qls}"
+TAINT_BUFFER_FLOW_SUITE="${TAINT_BUFFER_FLOW_SUITE:-$SUITE_ROOT/combo-taint-buffer-flow.qls}"
 TAINT_CONTROLFLOW_SUITE="${TAINT_CONTROLFLOW_SUITE:-$SUITE_ROOT/combo-taint-controlflow.qls}"
 
 mkdir -p "$DB_ROOT" "$RESULT_ROOT"
@@ -69,7 +89,42 @@ run_trimmed_taint_buffer() {
   analyze "$name" "isolated-taint" "$TAINT_SUITE"
   analyze "$name" "isolated-buffer" "$BUFFER_SUITE"
   analyze "$name" "combo-taint-buffer" "$TAINT_BUFFER_SUITE"
+  analyze "$name" "combo-taint-buffer-flow" "$TAINT_BUFFER_FLOW_SUITE"
   analyze "$name" "custom-only" "$CUSTOM_SUITE"
+}
+
+# Variants where user input genuinely flows into a buffer write/index.
+# This is the shard where the chained taint→buffer query has something to find
+# (the *_overrun_memcpy_* shards use sizeof(struct), a constant, and are not
+# attacker-controllable). Each file contains:
+#   bad()         : fgets → atoi → buffer[data]                 (TP-expected)
+#   goodG2B()     : hardcoded data = 7, no fgets                (TN-expected)
+#   goodB2G()     : fgets → atoi → bounds-check → buffer[data]  (TN, sanitized)
+run_taint_to_buffer_flow_cwe129_fgets() {
+  local case_dir="my_cases/taint + buffer/CWE121_Stack_Based_Buffer_Overflow/s01"
+
+  if ! can_build_makefile_case "$case_dir"; then
+    echo
+    echo "== Skipping: taint-buffer-cwe129-fgets-s01"
+    echo "Missing Juliet support files (testcasesupport/io.c and std_thread.c)."
+    return 0
+  fi
+
+  local name="taint-buffer-cwe129-fgets-s01"
+  local build_script
+  build_script="$(pwd)/scripts/build_selected_c_cases.sh"
+
+  local files=()
+  local i
+  for i in 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18; do
+    files+=("CWE121_Stack_Based_Buffer_Overflow__CWE129_fgets_${i}.c")
+  done
+
+  create_db "$name" "$case_dir" "$build_script ${files[*]}"
+  analyze "$name" "stock" "$STOCK_SUITE"
+  analyze "$name" "isolated-buffer" "$BUFFER_SUITE"
+  analyze "$name" "combo-taint-buffer" "$TAINT_BUFFER_SUITE"
+  analyze "$name" "combo-taint-buffer-flow" "$TAINT_BUFFER_FLOW_SUITE"
 }
 
 support_dir_for() {
@@ -134,6 +189,73 @@ run_selected_files_case_if_available() {
   analyze "$name" "$label_a" "$suite_a"
   analyze "$name" "$label_b" "$suite_b"
   analyze "$name" "$combo_label" "$combo_suite"
+}
+
+ensure_libpng() {
+  local tag="$1"
+  local dir="$TARGETS_ROOT/libpng-$tag"
+  if [ ! -d "$dir/.git" ]; then
+    mkdir -p "$TARGETS_ROOT"
+    git clone --depth 1 --branch "$tag" "$LIBPNG_REPO" "$dir"
+  fi
+  printf '%s' "$dir"
+}
+
+have_zlib() {
+  ldconfig -p 2>/dev/null | grep -q 'libz\.so' && return 0
+  [ -f /usr/include/zlib.h ] || [ -f /usr/local/include/zlib.h ]
+}
+
+# Run the full isolated + combination matrix on a single pinned libpng tag.
+# libpng is real-world PNG decoder code: fread/png_read_* pulls attacker-
+# controlled bytes, memcpy/memset writes use sizes derived from on-disk fields,
+# and chunk-length arithmetic is a documented integer-overflow surface — making
+# it a realistic target for each of the four isolated analyses and all four
+# pairwise combinations under study.
+run_libpng_target() {
+  local tag="$1"
+  local src name
+  src="$(ensure_libpng "$tag")"
+  name="libpng-$tag"
+
+  local build_script
+  build_script="$(pwd)/scripts/build_libpng.sh"
+  create_db "$name" "$src" "bash $build_script"
+
+  # Baseline.
+  analyze "$name" "stock" "$STOCK_SUITE"
+
+  # Isolated analyses (one per dimension).
+  analyze "$name" "isolated-taint"       "$TAINT_SUITE"
+  analyze "$name" "isolated-buffer"      "$BUFFER_SUITE"
+  analyze "$name" "isolated-integer"     "$INTEGER_SUITE"
+  analyze "$name" "isolated-controlflow" "$CONTROLFLOW_SUITE"
+
+  # Pairwise combinations under evaluation.
+  analyze "$name" "combo-taint-buffer"       "$TAINT_BUFFER_SUITE"
+  analyze "$name" "combo-taint-buffer-flow"  "$TAINT_BUFFER_FLOW_SUITE"
+  analyze "$name" "combo-taint-controlflow"  "$TAINT_CONTROLFLOW_SUITE"
+  analyze "$name" "combo-integer-taint"      "$INTEGER_TAINT_SUITE"
+  analyze "$name" "combo-buffer-integer"     "$BUFFER_INTEGER_SUITE"
+}
+
+run_libpng_all() {
+  if [ "$RUN_LIBPNG" != "1" ]; then
+    echo
+    echo "== Skipping libpng (RUN_LIBPNG=0)"
+    return 0
+  fi
+
+  if ! have_zlib; then
+    echo
+    echo "== Skipping libpng: zlib headers/library not found (apt install zlib1g-dev)"
+    return 0
+  fi
+
+  local tag
+  for tag in $LIBPNG_TAGS; do
+    run_libpng_target "$tag"
+  done
 }
 
 run_selected_full_subsets() {
@@ -290,7 +412,24 @@ run_selected_full_subsets() {
 
 main() {
   require_codeql
+
+  # LIBPNG_ONLY=1 skips the Juliet pipelines entirely and runs only the
+  # real-world libpng matrix. Useful for the design-science validation pass.
+  if [ "$LIBPNG_ONLY" = "1" ]; then
+    run_libpng_all
+    return 0
+  fi
+
   run_trimmed_taint_buffer
+
+  # Always attempt the taint→buffer flow demo. It will skip itself if the
+  # Juliet testcasesupport files are missing, so it is safe to run by default
+  # and is the centrepiece of the RQ2 (benefits-of-combination) evaluation.
+  run_taint_to_buffer_flow_cwe129_fgets
+
+  # Real-world target: libpng. Runs the full isolated+combination matrix on
+  # every tag in $LIBPNG_TAGS. Skips itself if zlib is unavailable.
+  run_libpng_all
 
   if [ "$RUN_FULL_SUBSETS" = "1" ]; then
     run_selected_full_subsets
