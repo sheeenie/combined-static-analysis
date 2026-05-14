@@ -4,7 +4,7 @@ This repository is set up to compare stock CodeQL C/C++ analysis against broader
 
 The verified paths are the self-contained `taint+buffer_trimmed` subset plus the selected Juliet shards under `my_cases/<combination>/.../sXX`. Juliet support files are expected at `my_cases/testcasesupport`; the run script compiles a small explicit file subset from each shard so the experiment stays fast and reproducible.
 
-The real-world path pins **libpng** at two release tags (`v1.6.37` and `v1.6.34`) and runs the full isolated + combination matrix against each. libpng is production C code that parses attacker-controlled image bytes into fixed-size buffers, exercising buffer, integer, taint, and control-flow dimensions simultaneously — making it the design-science validation target for the combination queries developed against Juliet.
+The real-world path pins **libpng** at five release tags — a clean modern baseline (`v1.6.37`) plus two vuln/fix pairs (`v1.6.34`/`v1.6.36` for CVE-2018-13785, `v1.2.53`/`v1.2.54` for CVE-2015-8126) — and runs the full isolated + combination matrix against each. libpng is production C code that parses attacker-controlled image bytes into fixed-size buffers, exercising buffer, integer, taint, and control-flow dimensions simultaneously — making it the design-science validation target for the combination queries developed against Juliet.
 
 ## What Is Being Tested
 
@@ -16,7 +16,7 @@ The high-level combinations are:
 | integer + taint | `my_cases/integer + taint` | `CWE190_Integer_Overflow/s03`, `CWE191_Integer_Underflow/s03` |
 | taint + buffer | `my_cases/taint+buffer_trimmed` and `my_cases/taint + buffer` | verified trimmed `CWE121`, `CWE122`; selected full `CWE121/s01`, `CWE122/s01` |
 | taint + control flow | `my_cases/taint + control flow` | `CWE134_Uncontrolled_Format_String/s01`; `CWE606` is relevant but larger and not enabled by default |
-| **real-world libpng** | `targets/libpng-<tag>/` (cloned by the script) | `v1.6.37` (clean modern baseline, FP-shape), `v1.6.34` (pre-fix for CVE-2018-13785), `v1.2.53` (pre-fix for CVE-2015-8126 and CVE-2015-8540) |
+| **real-world libpng** | `targets/libpng-<tag>/` (cloned by the script) | `v1.6.37` (clean modern baseline, FP-shape), `v1.6.34` (vuln, CVE-2018-13785), `v1.6.36` (fix for CVE-2018-13785), `v1.2.53` (vuln, CVE-2015-8126 / CVE-2015-8540), `v1.2.54` (fix for CVE-2015-8126) |
 
 This subset is intentionally small. It keeps the first iteration reproducible and avoids trying to build the entire benchmark suite at once.
 
@@ -253,25 +253,37 @@ LIBPNG_ONLY=1 ./scripts/run_experiments.sh
 Override the tag list:
 
 ```bash
-LIBPNG_TAGS="v1.6.37 v1.6.34 v1.2.59" LIBPNG_ONLY=1 ./scripts/run_experiments.sh
+LIBPNG_TAGS="v1.6.37 v1.6.34 v1.6.36 v1.2.53 v1.2.54" LIBPNG_ONLY=1 ./scripts/run_experiments.sh
 ```
 
 Other knobs: `LIBPNG_REPO` (defaults to the canonical `pnggroup/libpng`), `TARGETS_ROOT` (defaults to `targets/`), `RUN_LIBPNG=0` (skip libpng entirely from the default run).
 
 Requirements: `zlib` headers + library (`apt install zlib1g-dev`) and a C toolchain. The pipeline skips itself with a hint message if zlib is missing.
 
-### CVE-based validation on libpng
+### Validation tools for libpng
 
-`scripts/summarize_sarif.py` classifies findings by matching the enclosing function name against Juliet's `bad`/`good` convention. libpng functions are named `png_read_chunk`, `png_check_*`, `png_handle_*`, etc., so **every libpng finding falls into the `?` bucket** and the auto-derived precision number is meaningless. For libpng the relevant signal is **total result count per suite**, the **per-rule breakdown**, and — for true positives — **whether each known-CVE site was reached by any suite**.
-
-The per-tag CVE ground truth lives in `docs/libpng_cve_ground_truth.json`. `scripts/cve_validation.py` reads it, walks the SARIFs under `results/libpng-<tag>.*.sarif`, and reports — per documented CVE — which suites (stock / isolated-* / combo-*) produced a finding inside the vulnerable file (optionally narrowed by function or line range):
+`scripts/summarize_sarif.py` classifies findings by matching the enclosing function name against Juliet's `bad`/`good` convention. libpng functions are named `png_read_chunk`, `png_check_*`, `png_handle_*`, etc., so **every libpng finding falls into the `?` bucket** and the auto-derived precision number is meaningless. For libpng the relevant signal is total count per suite, per-rule breakdown, and three separate analytical scripts:
 
 ```bash
-python3 scripts/cve_validation.py            # all tags in ground truth
+# Per-CVE site coverage against manually-curated ground truth.
+python3 scripts/cve_validation.py            # all tags
 python3 scripts/cve_validation.py v1.6.34    # restrict to one tag
+
+# Per-pair |A|, |B|, |A ∪ B|, |A ∩ B| at enclosing-function granularity,
+# with the primary operator chosen by relationship type (dependency →
+# intersection, complementary → union). This is the central measurement
+# for the "what does combining buy us" research question.
+python3 scripts/intersect_sets.py
+python3 scripts/intersect_sets.py v1.6.34    # restrict to one tag
+
+# Vuln-tag vs fix-tag set diff. Cleanly labels TPs only for queries whose
+# sink is the bug's effect, not its symptom — see §"Iteration 3.5" for
+# why this arm came back nearly empty on our pattern-based queries.
+python3 scripts/diff_tags.py v1.6.34 v1.6.36
+python3 scripts/diff_tags.py v1.2.53 v1.2.54
 ```
 
-This is the design-science validation step: the same CVE is expected to disappear from the v-fixed tag and to still be reached (ideally with less surrounding noise) by the combination suites at the v-vulnerable tag.
+The per-tag CVE ground truth lives in `docs/libpng_cve_ground_truth.json` and is read by `cve_validation.py`. It maps `(tag, CVE) → (file, function)` for the documented sites we want each iteration to attempt to reach. Suites firing inside the function are reported as hits — the headline output of the experiment.
 
 ## Full Subset Runs
 
@@ -462,6 +474,43 @@ The intersection of two complementary analyses is still informative — it surfa
 
 Two of the three v1.6.x intersection hits (`cp_one_file`, `write_one_file`) are in libpng's test harness under `contrib/`, not in deployed library code — security-relevant FPs by construction. **`png_handle_iCCP` is the one production-code candidate that the intersection points at.** It is present at every 1.6.x tag including the fix, and matches the iCCP chunk handler that has had multiple historical CVEs (CVE-2017-12652, CVE-2017-19156, CVE-2018-14048).
 
+##### Per-line detail inside the intersection
+
+The actual file:line locations of every finding inside the `buffer ∩ taint` functions (i.e. *where* taint and buffer interact, not just *which function*):
+
+**v1.6.34 (vuln, CVE-2018-13785)** — 1 intersection function:
+
+- `png_handle_iCCP()` in `pngrutil.c`:
+  - **Buffer:** `pngrutil.c:1454` — `cpp/constant-array-overflow`
+  - **Taint (7):** `pngrutil.c:1375, 1392, 1400, 1419, 1427, 1534, 1630` — all `cpp/experimental/taint-source-hotspot` (libpng input-API call sites)
+
+The buffer finding at line 1454 sits in the middle of the cluster of taint reads (1375-1630), so this is a literal "attacker bytes are read into this function and a potential constant-array overflow is detected inside the same function." That is the shape the dependency intersection is designed to surface.
+
+**v1.6.37 / v1.6.36** (counts are identical between these tags — the v1.6.36 patch is unrelated to these functions) — 3 intersection functions:
+
+- `png_handle_iCCP()` in `pngrutil.c` — same shape as v1.6.34; taint lines shift by ±1 between tags:
+  - **Buffer:** `pngrutil.c:1454` — `cpp/constant-array-overflow`
+  - **Taint (7):** `pngrutil.c:1375, 1392, 1400, 1419, 1427, 1533, 1629` — `cpp/experimental/taint-source-hotspot`
+- `cp_one_file()` in `contrib/tools/pngcp.c` (test tool, not deployed code):
+  - **Buffer (5):** `pngcp.c:2220, 2235, 2235, 2236, 2260` — mix of `cpp/experimental/buffer-dangerous-api-hotspot` and `cpp/unbounded-write`
+  - **Taint (1):** `pngcp.c:2217` — `cpp/path-injection`
+- `write_one_file()` in `contrib/libtests/pngstest.c` (test harness):
+  - **Buffer (3):** `pngstest.c:3215, 3215, 3223` — `cpp/unbounded-write` + `cpp/experimental/buffer-dangerous-api-hotspot`
+  - **Taint (1):** `pngstest.c:3217` — `cpp/path-injection`
+
+**v1.2.53 / v1.2.54** — intersection is empty. Stock buffer-overrun queries do not fire inside any of the 32 functions that have `isolated-taint` findings on the 1.2.x line. This is the methodological tell that distinguishes the set-operator combination from the custom cross-signal queries: the latter (taint-source-hotspot, `TaintToBufferFlow.ql`) does fire inside `png_handle_PLTE` on 1.2.53 and catches CVE-2015-8126, but it does so by being a *different query* — not by intersecting the existing outputs.
+
+Reproducer for these line lists:
+
+```bash
+python3 scripts/intersect_sets.py v1.6.34   # function-level summary
+# Per-line detail comes from grepping the SARIFs directly, e.g.:
+python3 -c "import json; d=json.load(open('results/libpng-v1.6.34.isolated-buffer.sarif')); \
+  [print(r['locations'][0]['physicalLocation']['artifactLocation']['uri'], \
+         r['locations'][0]['physicalLocation']['region']['startLine'], r['ruleId']) \
+   for r in d['runs'][0]['results']]"
+```
+
 **Complementary pairs (union is primary):**
 
 | Tag | \|integer ∪ taint\|_fn | \|integer ∪ buffer\|_fn | \|taint ∪ controlflow\|_fn |
@@ -520,12 +569,118 @@ Methodological takeaway: **fix-tag diffs are a free TP label only for queries wh
 5. **Sink generality trades recall for queue size.** The iter-3 integer-guard sink is the broadest one in the pack, and it shows: 14 → 107-212 paths is what you pay for catching CVE-2018-13785. Narrowing this sink (e.g. require the comparison to gate a downstream allocation) would shrink the queue but might re-miss the CVE. The right knob position depends on whether the analysis is meant to be a high-precision triage list or a high-recall surface scan.
 6. **Each CVE shape needs its sink modelled at least once.** Adding the integer-guard sink (iter 3) is a one-time investment that lets every future tainted-integer-overflow bug be caught by the same data-flow framework. CVE-2015-8540 still misses because its shape — a tainted-parameter OOB read — isn't yet in the sink set.
 
-The 30 SARIFs and the validator output above are reproducible from the current repo state with:
+The 50 SARIFs (10 suites × 5 pinned tags) and all of the validator/intersection output above are reproducible from the current repo state with:
 
 ```bash
+# Build + analyze all five tags. Use LIBPNG_TAGS to restrict.
 LIBPNG_ONLY=1 ./scripts/run_experiments.sh
+
+# Per-CVE site coverage check (manually-curated ground truth):
 python3 scripts/cve_validation.py
+
+# Per-pair |A|, |B|, |A ∪ B|, |A ∩ B| at enclosing-function granularity,
+# with the primary operator (intersection / union) chosen by relationship:
+python3 scripts/intersect_sets.py
+
+# Optional: vuln-tag vs fix-tag diff (limitations described in §"Iteration 3.5")
+python3 scripts/diff_tags.py v1.6.34 v1.6.36
+python3 scripts/diff_tags.py v1.2.53 v1.2.54
 ```
+
+## Framework synthesis — RQ1 / RQ2 / RQ3 mapping
+
+The libpng case study is the empirical instantiation of a framework that is itself the answer to the three research questions. The framework has three moving parts, one per RQ:
+
+- **RQ1 — interaction typology.** Two interaction patterns are sufficient to classify every pair we observed: *dependency* (one analysis is a precondition for the other's security claim) and *complementary* (each analysis independently witnesses its own bug family).
+- **RQ2 — benefit per pattern.** Dependency combinations *clarify exploitability* (the combined set is the attacker-reachable subset of the larger analysis's candidate set). Complementary combinations *widen coverage* (the combined set is the union of bugs no single analysis catches alone).
+- **RQ3 — operator follows from pattern.** Intersection for dependency, union for complementary. The operator choice is justified by the semantics of the relationship, not by the per-tag overlap count; the per-tag counts then serve as an internal-consistency check rather than as the justification.
+
+### Synthesis table (one row per pair)
+
+| Pair | RQ1 pattern | RQ2 benefit | RQ3 operator | libpng evidence (`scripts/intersect_sets.py`) | CVE relevance |
+|---|---|---|:---:|---|---|
+| taint + buffer | **dependency** | clarifies exploitability — filter buffer candidates to the attacker-reachable subset | `∩` | `png_handle_iCCP` is the one production-code function in `buffer ∩ taint` on every 1.6.x tag; buffer site `pngrutil.c:1454` sits inside the taint-read cluster 1375-1630 | adjacent to historical iCCP CVEs; **does not** localize CVE-2015-8126 because stock buffer queries don't fire in `png_handle_PLTE` |
+| integer + taint | complementary | widens coverage — input-driven and input-independent integer defects are both bugs | `∪` | `\|A ∩ B\|_fn = 0` on every tag; union 38-63 functions per tag | CVE-2018-13785 caught by the integer-guard sink (iter 3), not by intersection of existing isolated suites |
+| integer + buffer | complementary | widens coverage — arithmetic-correctness and memory-boundary defects are different bug families | `∪` | `\|A ∩ B\|_fn = 0` on every tag; union 7-24 functions per tag | indirect — neither isolated side localises the documented CVEs |
+| taint + controlflow | complementary | widens coverage — control-flow defects (e.g. CWE-835, CWE-691) are bugs whether or not driven by tainted input | `∪` | `\|A ∩ B\|_fn = 0` on every tag; union 32-55 functions per tag | indirect |
+
+The single dependency pair has a *non-empty* intersection on every tag where its buffer leg fires, on the same production-code function. The three complementary pairs have an *empty* intersection on every tag. Both observations are consistent with the operator chosen from semantics: the dependency-intersection lobe is the security-relevant subset for that pair, and the complementary unions are the security-relevant set for the other three because they would lose all signal under intersection.
+
+### Two archetypal Venn diagrams (conceptual artefacts for RQ1)
+
+The Venn diagrams encode the *typology*, not per-tag data. The empirical tables above show that the typology's prescriptions hold on the libpng instance.
+
+**Figure 1 — Dependency Venn (taint + buffer).**
+
+```
+   ┌──────────────────────┐   ┌──────────────────────┐
+   │  buffer-overflow     │   │  attacker-reachable  │
+   │  candidates (|A|)    │   │  code paths (|B|)    │
+   │           ┌──────────┼───┼──────────┐           │
+   │  defensive│ security-│   │reachable │           │
+   │  / unreach│ relevant │   │ but non- │           │
+   │  -able    │   set    │   │overflowing           │
+   │           │ (A ∩ B)  │   │          │           │
+   │           └──────────┼───┼──────────┘           │
+   └──────────────────────┘   └──────────────────────┘
+```
+
+*Caption:* A buffer-overflow candidate counts as a security claim only when it is also attacker-reachable. The intersection lobe is the security-relevant subset. The left-only lobe (overflow candidates that are not reachable from any input API) is defensive code or dead code; the right-only lobe (taint paths that do not reach an overflow candidate) is normal data flow. Neither non-intersection lobe alone supports a vulnerability claim.
+
+**Figure 2 — Complementary Venn (integer + taint, integer + buffer, taint + controlflow).**
+
+```
+   ┌──────────────────┐    ┌──────────────────┐
+   │  bug family A    │    │  bug family B    │
+   │                  │    │                  │
+   │   (e.g. integer  │    │   (e.g. taint    │
+   │    overflows)    │    │    reachability) │
+   │                  │    │                  │
+   └──────────────────┘    └──────────────────┘
+```
+
+*Caption:* Each analysis witnesses a bug family the other does not. An integer overflow is a defect whether or not the same function is on a taint path; a missing termination check is a defect whether or not it is input-driven. The combined bug list is the union of both circles; the (typically small or empty) intersection, when it exists, is the higher-confidence corroborated subset rather than the primary set. On libpng, every complementary pair has empty function-level intersection on every tag — visually, the two circles do not overlap.
+
+### Validity scope
+
+- **Internal validity:** the operator-from-semantics rule is internally consistent on libpng for all four pairs and all five tags.
+- **External validity:** single tool (CodeQL), single target family (libpng), 5 tags. The framework's prescriptions hold on this instance; generalisation across tools and targets is future work.
+- **Construct validity:** the dependency intersection counts depend on the source/sink coverage of the underlying queries. Where one of the two legs fires in zero functions (e.g. `isolated-buffer` on 1.2.x), the intersection is empty by construction of the leg, not by absence of attacker-reachable buffer bugs.
+
+## Writing Up the Research Questions
+
+A suggested structure for the thesis / paper section that uses this case study as its evidence base. Each step names the artefact in this repo that supplies the evidence.
+
+**Step 1 — RQ1 narrative (typology + Venn diagrams).**
+- Introduce the typology: dependency, complementary.
+- Present **Figure 1** and **Figure 2** as the conceptual claim.
+- Argue from the *meaning* of each analysis pair why it falls into one bucket or the other. Do not lead with the empirical counts here — the counts are evidence for RQ3, not the source of the typology.
+
+**Step 2 — RQ2 narrative (benefit per pattern).**
+- For dependency: cite the buffer ∩ taint result on `png_handle_iCCP`. The benefit is *exploitability clarification* — the intersection takes the broader analysis's candidate set and filters it to the subset that has an attacker-reachable witness.
+- For complementary: cite the per-tag union sizes (38-63 / 7-24 / 32-55). The benefit is *coverage widening* — the union of two complementary analyses catches bugs that neither catches alone, including CVE-2018-13785 (caught by the integer side, missed by buffer).
+
+**Step 3 — RQ3 narrative (framework as algorithm).**
+- Present the framework as: (i) classify each pair by RQ1 pattern; (ii) choose the operator from RQ2 semantics (`∩` for dependency, `∪` for complementary); (iii) validate empirically that the per-tag set sizes are consistent with the choice.
+- Cite the **synthesis table** above as the one-glance summary of the framework applied to four pairs.
+- Cite `scripts/intersect_sets.py` as the operational implementation of the framework.
+
+**Step 4 — Limitations / threats to validity.**
+- Single-tool, single-target evaluation (see §"Validity scope").
+- Construct dependency on source/sink coverage: empty intersection at v1.2.x is not evidence of safety, only of one leg's silence.
+- Fix-tag diff arm (iter 3.5) does not work for sinks that are the bug's *symptom* (comparison, arithmetic). Document this as a methodological limitation of mechanical TP labelling on pattern-based queries.
+
+**Step 5 — Reproducibility appendix.**
+- Point the reader at the four scripts:
+  - `scripts/run_experiments.sh` — produces the 50 SARIFs.
+  - `scripts/cve_validation.py` — per-CVE site coverage against `docs/libpng_cve_ground_truth.json`.
+  - `scripts/intersect_sets.py` — per-pair `|A|`, `|B|`, `|A ∪ B|`, `|A ∩ B|` with the primary operator chosen by relationship type.
+  - `scripts/diff_tags.py` — vuln-tag vs fix-tag set diff (limitations documented in §"Iteration 3.5").
+
+**Step 6 — Future work / generalisation.**
+- Extend to a second tool (e.g. Joern, Semgrep, Infer) and check whether the same typology holds — does another tool's "buffer + taint" still classify as dependency?
+- Extend to a second target family (e.g. zlib, libxml2) and check whether the per-tag set-size pattern (non-empty dependency intersection, empty complementary intersection) replicates.
+- A path-structural fix-tag diff would tighten the iter-3.5 arm and is the natural next mechanical TP-labelling step.
 
 ## Why Some Stock Results Are Sparse
 
