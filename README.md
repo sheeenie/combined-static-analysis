@@ -647,6 +647,121 @@ The Venn diagrams encode the *typology*, not per-tag data. The empirical tables 
 - **External validity:** single tool (CodeQL), single target family (libpng), 5 tags. The framework's prescriptions hold on this instance; generalisation across tools and targets is future work.
 - **Construct validity:** the dependency intersection counts depend on the source/sink coverage of the underlying queries. Where one of the two legs fires in zero functions (e.g. `isolated-buffer` on 1.2.x), the intersection is empty by construction of the leg, not by absence of attacker-reachable buffer bugs.
 
+## Discussion — what the intersection keeps, what it drops, and how the pattern generalises
+
+The dependency intersection is more than a number per tag: each finding has a concrete code site that does or does not survive the taint filter, and each survivor has a different security impact than each dropout. Inspecting them is what justifies the operator choice in qualitative terms.
+
+### Buffer findings kept by `buffer ∩ taint` (v1.6.x intersection)
+
+**Production code (1 site):**
+
+- **`pngrutil.c:1454` in `png_handle_iCCP()` — `cpp/constant-array-overflow`**
+  ```c
+  Byte local_buffer[PNG_INFLATE_BUF_SIZE];
+  ...
+  (void)png_inflate_read(png_ptr, local_buffer,
+      (sizeof local_buffer), &length, profile_header, &size,
+      0/*finish: don't, because the output is too small*/);
+  ```
+  A fixed-size on-stack buffer is handed to a zlib-backed inflate routine that operates on attacker-supplied compressed bytes from the iCCP chunk. The buffer rule fires on the static-size argument relationship; the taint side fires because every input to this function (`length`, `keyword`, the zstream contents) originates from libpng input APIs that read from the PNG file. **Impact, if exploitable:** stack-buffer overflow in a chunk handler reached during normal `png_read_info` / `png_read_image` calls — i.e. ordinary decoding of a crafted PNG. This is the canonical iCCP vulnerability shape (same chunk handler as CVE-2017-12652, CVE-2017-19156, CVE-2018-14048). The intersection is doing exactly what it is supposed to do: pull this single production-code site out of a 40-finding buffer list.
+
+**Contrib / test-harness code (8 sites, all FPs from a deployed-library perspective):**
+
+- `contrib/tools/pngcp.c:2220/2235/2236/2260` (`cp_one_file`) — `strcpy`/`strcat` into stack buffers. Taint fires via `cpp/path-injection` on a filename argument. **Impact:** the *tool* `pngcp` (a CLI utility shipped alongside the library) can mishandle attacker-controlled filenames if it is itself invoked on untrusted input. Not a libpng library vulnerability.
+- `contrib/libtests/pngstest.c:3215/3223` (`write_one_file`) — `sprintf`/`strcpy` into a `char name[32]` stack buffer used to construct a temp-file name. **Impact:** a test driver could overflow its own internal name buffer if its `tmpf` argument is long. Not a deployed-code surface.
+
+These 8 sites are inside the intersection because of where the test harness sits in the build (it links against libpng, so taint can find an input edge), but security-relevance vanishes when we ask "is this code exposed in `libpng.so`?". Operationally, this argues for a *second* filter beyond taint: "in `contrib/` ?" Excluding `contrib/**` would leave the intersection at exactly the production-code site, which is the genuinely security-relevant subset.
+
+### Buffer findings dropped by the intersection (`isolated-buffer` only)
+
+These are the 33-of-42 (v1.6.x) and 1-of-1 (v1.2.x) findings that the buffer suite flagged but the taint suite did not fire inside the same function. They are *not* automatically false positives — they are findings where the structural buffer pattern was detected but the attacker-reachability premise was not established. Some are genuine FPs; some would be TPs under a richer source model.
+
+**Production code in v1.6.x (3 sites):**
+
+- **`pngerror.c:469-470` in `png_format_buffer()` — `cpp/constant-array-overflow`**
+  ```c
+  buffer[iout++] = ':';
+  buffer[iout++] = ' ';
+  while (iin < PNG_MAX_ERROR_TEXT-1 && error_message[iin] != '\0')
+     buffer[iout++] = error_message[iin++];
+  ```
+  Local fixed-size buffer (`PNG_MAX_ERROR_TEXT`) written by post-increment with no explicit bound on `iout`. The taint side does not fire because the function's inputs (`chunk_name`, `error_message`) come from internal callers passing literal or near-literal error strings, not from any libpng input API. **Impact:** if `iout` were driven past `PNG_MAX_ERROR_TEXT`, this would be a stack-write overflow during error reporting. In practice the surrounding code bounds `iin < PNG_MAX_ERROR_TEXT-1`, but `iout` is incremented by separate branches above this snippet, so the bound is implicit rather than enforced. **Why the intersection drops it:** the input that could drive `iout` past its bound (a long, attacker-controlled error message) is not modelled as taint. The dropout is reasonable for an attacker-reachability question, but a manual reviewer might still want to read this — it is a *latent* bug that becomes exploitable only if some other code path passes attacker-controlled text into `png_format_buffer`.
+- **`pngwrite.c:491` in `png_convert_from_time_t()` — `cpp/potentially-dangerous-function`**
+  ```c
+  tbuf = gmtime(&ttime);
+  ```
+  `gmtime` is flagged because it returns a pointer into a static, non-reentrant buffer that a subsequent `gmtime` call clobbers. Taint never fires here because the argument is a caller-supplied `time_t` (not a PNG input), and the rule itself isn't a memory-safety rule — it's a "this API is dangerous to call" rule. **Impact:** thread-safety / clobbering between concurrent or successive calls. Not a memory-corruption issue from PNG bytes. The intersection correctly drops it.
+- (`pngerror.c:469-470` is two findings on adjacent lines; same root cause.)
+
+**Production code in v1.2.x (1 site):**
+
+- **`pngwrite.c:451` in `png_convert_from_time_t()`** — same `gmtime` finding as above. Correctly dropped.
+
+**Test / utility code in v1.6.x (~30 sites):**
+
+- `contrib/libtests/pngvalid.c` (gamma/standard validators), `contrib/libtests/pngstest.c` (image comparators, pixel printers), `contrib/tools/pngcp.c:764/768` (option-string parser) — fixed-size buffer writes inside test/utility code with no taint path that the source model knows about. **Impact:** these are intra-test buffers fed by either constant strings or values that the test harness itself generates. Bugs would manifest as test crashes; they are not in the security surface of the deployed library.
+
+### Net characterisation of the buffer dropouts
+
+| Dropout category | v1.6.x count | Status |
+|---|---:|---|
+| `gmtime` "dangerous API" finding | 1 (×3 tags) | True dropout — rule is about thread-safety, not reachability. Correctly excluded. |
+| `png_format_buffer` error formatter | 2 | Latent bug, attacker-reachability not modelled. Worth a manual look but the intersection's exclusion is consistent with the operator's semantics. |
+| `contrib/` test and tool code | 30+ | Mostly FPs for *deployed-library* security; would need a second filter ("not in `contrib/`") to be clean. |
+
+The single in-intersection production finding (`png_handle_iCCP`) is qualitatively a different *kind* of finding than every dropout: it sits inside a chunk handler invoked during routine decoding of attacker-supplied bytes. The dropouts are either non-reachability findings (`gmtime`), latent bugs (`png_format_buffer`), or test-only sites. **The intersection successfully separates the one "decode a malicious PNG" candidate from the 33 "needs a separate argument to be a vulnerability" candidates.** That is the qualitative justification for the dependency operator, independent of the count.
+
+### When does combining buffer + taint actually make sense?
+
+Combining helps when **all four of these hold**:
+
+1. **The buffer detector is high-recall, low-precision.** On libpng v1.6.x it returns 40+ findings, of which only one is in the production attacker-reachable code path. Without a filter, a reviewer reads 40 to find 1.
+2. **A meaningful taint boundary exists in the codebase.** Libpng has clear input APIs (`png_read_data`, `png_get_uint_*`, chunk handler parameters). Code without a clear external-input edge (e.g. internal kernel routines, statically-linked numerical libraries) has nothing for the taint side to anchor on.
+3. **The source/sink model is good enough that the taint suite fires inside the candidate functions you care about.** On libpng v1.2.x the taint suite does not fire inside `png_handle_PLTE` because the source model is too narrow → intersection collapses to zero by *coverage*, not by *safety*. The intersection only works as a filter when the taint side has real recall in the same code regions as the buffer side.
+4. **The reviewer cost of inspecting one finding is comparable to or higher than the cost of running the second analysis.** For small finding lists, the intersection saves nothing.
+
+Conversely, the combination is **not useful** when:
+
+- The buffer detector is already path-sensitive (it already encodes reachability internally — adding taint duplicates the work).
+- The taint side has zero overlap with the buffer side by code coverage (intersection is empty for trivial reasons; the operator yields no information).
+- The code has no clear external-input boundary (no taint sources to anchor).
+- The buffer findings are uniformly high-confidence on their own (the cost of triaging them all is acceptable, so the filter buys nothing).
+
+### Generalisation — the dependency pattern beyond buffer overflow
+
+The buffer-overflow case is one instance of a broader pattern: **any structural-defect detector D combines with any reachability-or-exploitability premise P in the dependency pattern, operator intersection.** D produces "could be a defect" findings; P produces "is reachable / is exploitable" findings; the intersection produces "is a defect under conditions an attacker can drive".
+
+Same pattern, different D's:
+
+| D — structural-defect detector | P — exploitability premise | D ∩ P — what the intersection names |
+|---|---|---|
+| Buffer overflow candidate (this work) | Tainted input | Exploitable buffer overflow |
+| Integer overflow (CWE-190) | Tainted operand | Exploitable wrap (the iter-3 sink already does this inline, but it would also work as a set intersection) |
+| Null-pointer dereference (CWE-476) | Tainted null source | DoS via attacker-induced null deref |
+| Use-after-free (CWE-416) | Tainted `free`-trigger | Exploitable UAF |
+| Out-of-bounds read (CWE-125) | Tainted index | Information disclosure on a crafted input |
+| Divide-by-zero (CWE-369) | Tainted divisor | DoS via crafted divisor |
+| Format-string sink | Tainted format argument | Format-string attack (CWE-134) |
+| `system()` / `exec*()` call | Tainted command argument | Command injection (CWE-78) |
+| SQL string construction | Tainted SQL fragment | SQL injection (CWE-89) |
+| File-path construction | Tainted path component | Path traversal (CWE-22) |
+| Unbounded loop | Tainted loop bound | DoS via crafted bound (CWE-835) |
+| Deserialization sink | Tainted serialized input | Insecure deserialization (CWE-502) |
+
+In every row the operator is `∩`, the relationship is dependency, and the justification is the same shape: "D alone says *could*; P alone says *reachable*; D ∩ P says *vulnerability*."
+
+**Even further generalisation — P need not be taint.** Taint is one concrete reachability premise; the dependency pattern works for any *relevance gate* that converts a structural finding into a security claim. Other useful P's:
+
+- *Reachable from public API* (narrows to deployed surface, drops internal helpers).
+- *Reachable from a network entry point* (narrows to network attack surface).
+- *Called across a privilege boundary* (narrows to privilege-escalation candidates).
+- *In a region with no Control-Flow Integrity guard* (narrows to exploit-primitive sites).
+- *In a function reachable from an event-loop callback* (narrows to async-relevant subset).
+
+So the framework that the libpng case validates is not "taint + X is special" but "**structural defect ∩ relevance gate**, for any choice of gate, is the dependency pattern". The same applies symmetrically on the complementary side: any pair of analyses where each side is independently sufficient evidence of its own bug family (CWE-190 alone, CWE-119 alone, CWE-835 alone, CWE-362 alone, …) combines under union. The two patterns and two operators cover the full design space we observed.
+
+This is the generalisation the libpng case study supports: not a buffer/taint-specific result, but a typology that classifies any pair of static analyses by the role each plays in producing a security claim, and prescribes the combination operator from that role.
+
 ## Writing Up the Research Questions
 
 A suggested structure for the thesis / paper section that uses this case study as its evidence base. Each step names the artefact in this repo that supplies the evidence.
