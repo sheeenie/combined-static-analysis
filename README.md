@@ -818,3 +818,69 @@ Other selected shards are small Juliet slices where the stock rules may only rep
 5. Only expand to larger CWE folders after the selected subset behaves as expected.
 
 The key comparison is not just "did CodeQL find something", but whether the combination suite adds findings and rule diversity beyond the isolated category suites.
+
+## Taint sources used in the libpng experiment
+
+Every claim about "attacker-reachable" code in the libpng case study depends on what the taint analysis considers an *attacker-controlled entry point*. CodeQL ships a generic source model — `semmle.code.cpp.security.FlowSources` — that captures libc-level inputs (`argv`, `environ`, `read`/`fread`/`recv`/`getenv` return values, etc.). On a library like libpng that wraps its file I/O behind its own helpers, the stock model finds nothing inside chunk handlers: the path from the underlying `fread` to e.g. `png_handle_iCCP` runs through several layers of indirection (`png_read_data` dispatched via `png_ptr->read_data_fn`) that the stock model does not see through. **Until a project-specific source adapter is supplied, the data-flow query produces zero results on libpng.**
+
+The source model used in this experiment is the union of:
+
+### 1. Stock CodeQL sources (no modification)
+
+Whatever `RemoteFlowSource` / `FlowSource` in `semmle.code.cpp.security.FlowSources` recognises — typically: `argv` and `argc` of `main`; `environ` and `getenv` return values; the buffer/return of `read`, `fread`, `recv`, `recvfrom`, `recvmsg`; file-descriptor reads via `fgets`, `gets`, `scanf` family; sockets; OS-specific input channels.
+
+These are ORed into every taint query in the pack via the `isAnySource(node, type)` predicate in `queries/combined-cpp/TaintToBufferFlow.ql`, so any libpng code path that happens to call libc inputs directly is still covered.
+
+### 2. Custom libpng sources, defined in `queries/combined-cpp/LibpngSources.qll`
+
+Three source kinds, each motivated by where attacker-controlled bytes actually enter libpng:
+
+#### (a) Output buffer of libpng byte-readers
+
+Modelled as `source.asDefiningArgument() = call.getArgument(1)` for calls to:
+
+- `png_read_data` — the public read entry point. Dispatches through `png_ptr->read_data_fn`, which by default wraps `fread` on the PNG input stream.
+- `png_default_read_data` — the built-in default for `read_data_fn`. Same I/O semantics.
+- `png_crc_read` — internal helper that reads bytes from the input stream and updates the running CRC.
+
+After any of these calls returns, the buffer pointed to by the 2nd argument holds raw, attacker-supplied PNG bytes. **Effect:** every read into a local stack/heap buffer becomes a taint source whose downstream uses are tracked through the new-style data-flow framework.
+
+#### (b) `length` / `size` parameter of chunk handlers and length-check helpers
+
+Modelled as `source.asParameter() = p` where:
+
+- `f.getName().matches("png_handle_%")` — every chunk-handler entry point (`png_handle_IHDR`, `png_handle_PLTE`, `png_handle_iCCP`, `png_handle_tEXt`, `png_handle_IDAT`, …), or
+- `f.getName() = ["png_check_chunk_length", "png_check_user_chunk_length"]` — the chunk-length validators,
+
+and the parameter's name is `length` or `size`.
+
+These parameter values are parsed directly from the on-disk PNG chunk header *before* the handler is invoked, by `png_read_chunk_header` upstream. Modelling them as sources at the handler's entry point lets the analysis catch the CVE-2018-13785 shape: a tainted chunk length flows into `png_check_chunk_length` and is compared against `PNG_USER_CHUNK_MALLOC_MAX` and a derived `row_factor`, where the integer wrap bypasses the bound. **Effect:** every chunk handler in libpng has a taint root at its `length`/`size` formal parameter, even when the handler is called via a function-pointer table.
+
+#### (c) Return values of byte-order conversion helpers
+
+Modelled as `source.asExpr() = call` for calls to:
+
+- `png_get_uint_32`, `png_get_uint_31`, `png_get_uint_16` — unsigned big-endian readers.
+- `png_get_int_32`, `png_get_int_16` — signed big-endian readers.
+
+libpng uses these pervasively to interpret 2- and 4-byte fields out of read buffers (IHDR width/height, PLTE entry counts, IDAT offsets, etc.). **Effect:** every parsed integer that came from the PNG stream is a taint source from its first arithmetic use onward, including across helper calls.
+
+### 3. Coarser predicate for the syntactic hotspot queries
+
+Same file, separate predicate: `libpngInputApi(FunctionCall call)`. This is **not** a data-flow source — it is a same-function trigger used by `TaintSourceHotspot.ql`, `ComboTaintBufferHotspot.ql`, `ComboTaintControlFlowHotspot.ql`, and `ComboIntegerTaintHotspot.ql`. It recognises any call to: `png_read_data`, `png_default_read_data`, `png_get_uint_{32,16,31}`, `png_get_int_{32,16}`, `png_read_chunk_header`, `png_crc_read`, `png_crc_finish`. A function that contains any such call is treated as "houses an attacker-input call site" by the hotspot suites, which is what powers the function-level `buffer ∩ taint` intersection.
+
+### Why this matters — the source model is the experiment's load-bearing input
+
+- **Without (a)+(b)+(c):** the data-flow query `combo-taint-buffer-flow` returned **0 paths** on every libpng tag (iter 1).
+- **With (a)+(b)+(c) but the original sinks:** the same query returned **14 paths per tag** (iter 2) and located CVE-2015-8126 inside `png_handle_PLTE` on v1.2.53.
+- **With (a)+(b)+(c) plus the iter-3 integer-guard sink:** the query returned **107-212 paths per tag** and added CVE-2018-13785 inside `png_check_chunk_length` on v1.6.34.
+
+Every per-tag count in §"Real-world libpng results", every function name in the `buffer ∩ taint` intersection, and every CVE-coverage `✓` in §"CVE-site coverage" is downstream of this 90-line source model. Substituting a different project for libpng requires writing an analogous `<project>Sources.qll` that names *that* project's input wrappers and parser entry points — this is the per-target engineering cost of the framework.
+
+### Source model boundaries — what is *not* modelled (and would change which CVEs are caught)
+
+- **Tainted *parameters* of write-side helpers.** CVE-2015-8540 (OOB read in `png_check_keyword` via crafted keyword) is missed in part because the `key` parameter — tainted at the caller because it originated in a `tEXt`/`zTXt`/`iTXt` chunk — is not modelled as a source at the callee's entry. Adding write-side helper parameters analogous to (b) would close this gap.
+- **Internal field reads from `png_info` / `png_struct`.** When the decoder stores a parsed value in `info_ptr->...` and later reads it back, the taint label is lost unless the field is itself part of the model. The current model tracks *flow*, not *taint state across struct fields*, so cross-function correlations that pass through `png_info` are conservative.
+- **CRC-validated paths are treated identically to unvalidated paths.** `png_crc_finish` returning success is not modelled as a sanitiser — the taint label survives CRC verification, which is conservative but consistent with the threat model (CRC is integrity, not authentication; an attacker writes both the bytes and the CRC).
+
+These three boundaries are concrete iter-4 work items and are flagged here so the source model's scope is auditable rather than implicit.
