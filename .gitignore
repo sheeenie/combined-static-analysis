@@ -1,0 +1,37 @@
+# CodeQL CLI bundles and downloaded tooling
+/codeql/
+/codeql-*.tar.gz
+/codeql-*.zip
+/.cache/
+
+# Generated CodeQL databases, caches, logs, and query outputs
+/codeql-dbs/
+/results/
+/my_cases/**/*-db/
+*.bqrs
+*.sarif
+*.sarif.json
+*.log
+
+# Native build outputs from benchmark compilation
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+a.out
+
+# Local editor, OS, and Python helper noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/

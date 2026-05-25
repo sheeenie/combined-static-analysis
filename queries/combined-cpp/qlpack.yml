@@ -1,0 +1,4 @@
+name: combined-static-analysis/cpp-combinations
+version: 0.0.1
+dependencies:
+  codeql/cpp-all: 10.1.0

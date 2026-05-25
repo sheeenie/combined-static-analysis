@@ -1,0 +1,4 @@
+- description: Combined integer and taint C/C++ query suite
+- import: codeql-suites/experiment/isolated-integer.qls
+- import: codeql-suites/experiment/isolated-taint.qls
+- query: ComboIntegerTaintHotspot.ql

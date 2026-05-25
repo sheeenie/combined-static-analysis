@@ -1,0 +1,5 @@
+- description: Combined taint and buffer C/C++ query suite
+- import: codeql-suites/experiment/isolated-taint.qls
+- import: codeql-suites/experiment/isolated-buffer.qls
+- query: StructFieldMemcpyOverrun.ql
+- query: ComboTaintBufferHotspot.ql

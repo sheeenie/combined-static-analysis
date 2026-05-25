@@ -1,0 +1,43 @@
+{
+  "_comment": "Per-tag ground truth for libpng CVEs used in design-science validation. Each entry pins the vulnerable file/function at the documented site. line_range is optional and may be omitted when the function name alone is enough to scope the check. Sources: NVD (nvd.nist.gov), MITRE CVE, and libpng commit history.",
+  "v1.6.37": [],
+  "v1.6.36": [],
+  "v1.2.54": [
+    {
+      "id": "CVE-2015-8540",
+      "summary": "Out-of-bounds read in png_check_keyword via crafted text-chunk keyword. Still present at 1.2.54 (fixed in 1.2.55).",
+      "file": "pngwutil.c",
+      "function": "png_check_keyword",
+      "cwe": ["CWE-125"],
+      "fixed_in": "1.2.55"
+    }
+  ],
+  "v1.6.34": [
+    {
+      "id": "CVE-2018-13785",
+      "summary": "Integer overflow in png_check_chunk_length leads to incorrect buffer size in palette/chunk handling.",
+      "file": "pngrutil.c",
+      "function": "png_check_chunk_length",
+      "cwe": ["CWE-190", "CWE-119"],
+      "fixed_in": "1.6.36"
+    }
+  ],
+  "v1.2.53": [
+    {
+      "id": "CVE-2015-8126",
+      "summary": "Heap-based buffer overflow in png_handle_PLTE when reading PNG with crafted palette length.",
+      "file": "pngrutil.c",
+      "function": "png_handle_PLTE",
+      "cwe": ["CWE-119", "CWE-787"],
+      "fixed_in": "1.2.54"
+    },
+    {
+      "id": "CVE-2015-8540",
+      "summary": "Out-of-bounds read in png_check_keyword via crafted text-chunk keyword.",
+      "file": "pngwutil.c",
+      "function": "png_check_keyword",
+      "cwe": ["CWE-125"],
+      "fixed_in": "1.2.55"
+    }
+  ]
+}
