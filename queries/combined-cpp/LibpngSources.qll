@@ -1,38 +1,28 @@
 /**
- * Custom libpng source models for the combined-static-analysis pack.
+ * libpng-specific taint sources for the combined-static-analysis pack.
  *
- * libpng pulls attacker-controlled bytes through its own wrappers
- * (`png_read_data`, `png_get_uint_*`, and the `length` parameter of chunk
- * handlers) rather than calling libc input APIs directly from the bug
- * sites. The stock `semmle.code.cpp.security.FlowSources` model doesn't
- * know about these wrappers, so on libpng the data-flow taint queries
- * see no source-to-sink path. This module adds the missing libpng
- * sources for both the precise data-flow analyses (predicate
- * `libpngFlowSource`) and the broader syntactic hotspot rules
- * (predicate `libpngInputApi`).
+ * libpng reads attacker-controlled bytes through its own wrappers
+ * (png_read_data, png_get_uint_*, chunk-handler length parameters), not by
+ * calling libc input APIs at the bug sites. The stock FlowSources model does
+ * not know about those wrappers, so without this file the data-flow queries
+ * find no source-to-sink path on libpng.
  *
- * Why a predicate instead of `extends RemoteFlowSource`:
- * `RemoteFlowSource` is defined against `semmle.code.cpp.ir.dataflow`
- * (IR `DataFlow::Node`), while the queries in this pack use the AST
- * `semmle.code.cpp.dataflow.new` API. Keeping the model as a predicate
- * on the new-style `DataFlow::Node` avoids the IR/AST bridging overhead
- * and lets each query OR this source set into its own `isSource`.
+ * Two predicates are exposed:
+ *   libpngFlowSource - data-flow source nodes (used by TaintToBufferFlow.ql)
+ *   libpngInputApi   - same-function trigger used by the syntactic hotspots
+ *
+ * libpngFlowSource is a predicate rather than a RemoteFlowSource subclass
+ * because the pack uses the new-style AST DataFlow API, not the IR one that
+ * RemoteFlowSource is built against.
  */
 
 import cpp
 import semmle.code.cpp.dataflow.new.DataFlow
 
-/**
- * Holds if `source` is a libpng-specific taint source.
- *
- * `sourceType` is a short label suitable for the SARIF result message
- * (mirrors the role of `FlowSource::getSourceType()` in the stock lib).
- */
 predicate libpngFlowSource(DataFlow::Node source, string sourceType) {
-  // The output buffer of `png_read_data(png_ptr, buf, length)`. The function
-  // dispatches through `png_ptr->read_data_fn`, which defaults to a wrapper
-  // around `fread` on the PNG input stream. Anything subsequently read from
-  // `buf` is attacker-controlled.
+  // Output buffer of png_read_data(png_ptr, buf, length) and friends. The
+  // function dispatches through png_ptr->read_data_fn, which by default wraps
+  // fread on the PNG input stream.
   exists(FunctionCall call |
     call.getTarget()
         .hasGlobalName([
@@ -44,10 +34,8 @@ predicate libpngFlowSource(DataFlow::Node source, string sourceType) {
     sourceType = "libpng input via " + call.getTarget().getName() + "()"
   )
   or
-  // The `length` (or `size`) parameter of chunk-handler entry points such as
-  // `png_handle_PLTE`, `png_handle_IHDR`, etc., and of length-check helpers
-  // (`png_check_chunk_length`). These values are read directly from the
-  // on-disk PNG chunk header before the handler is invoked.
+  // The `length` / `size` parameter of png_handle_* and the chunk-length
+  // helpers. These come from the on-disk chunk header.
   exists(Function f, Parameter p |
     (
       f.getName().matches("png_handle_%")
@@ -60,8 +48,7 @@ predicate libpngFlowSource(DataFlow::Node source, string sourceType) {
     sourceType = "libpng chunk-length parameter of " + f.getName() + "()"
   )
   or
-  // Byte-order conversion helpers that interpret raw input bytes as integers.
-  // Used pervasively in libpng to parse on-disk fields out of read buffers.
+  // Byte-order conversion helpers that parse on-disk fields out of read buffers.
   exists(FunctionCall call |
     call.getTarget()
         .hasGlobalName([
@@ -74,10 +61,8 @@ predicate libpngFlowSource(DataFlow::Node source, string sourceType) {
 }
 
 /**
- * Holds if `call` is a libpng input/parse API call useful for the coarse
- * "function contains attacker input" syntactic hotspots. The hotspots use
- * this as a same-function trigger; data-flow queries should use
- * `libpngFlowSource` instead, which captures the exact source nodes.
+ * Same-function trigger used by the syntactic hotspot queries. Holds for any
+ * call to a libpng input or parse helper. For data-flow, use libpngFlowSource.
  */
 predicate libpngInputApi(FunctionCall call) {
   call.getTarget()

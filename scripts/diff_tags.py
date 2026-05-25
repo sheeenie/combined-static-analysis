@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """Diff SARIF findings between a vuln tag and a fix tag of the same project.
 
-Findings present at the vuln tag but absent at the fix tag are TP
-candidates — they correspond to code that the fix commit demonstrably
-altered. This is the closest mechanical equivalent to Juliet's auto
-TP/FP labelling on real-world targets: you get a labelled-by-construction
-subset without per-finding code reading.
+Findings present at the vuln tag but absent at the fix tag correspond to
+code the fix commit altered, so they are candidate TPs without per-finding
+code reading.
 
-Per-finding-line diffing is unreliable across micro-releases (line
-numbers shift). This tool diffs at the granularity of (ruleId, file).
-When the vuln tag has N findings of rule R in file F and the fix tag has
-M < N, (N - M) is the count of vuln-only findings to manually inspect.
+Per-line diffing is unreliable across micro-releases because line numbers
+shift. We diff at (ruleId, file-basename) granularity. If the vuln tag has
+N findings of rule R in file F and the fix tag has M < N, then (N - M) is
+the count of vuln-only findings to inspect.
 
 Usage:
   python3 scripts/diff_tags.py v1.6.34 v1.6.36                   # all suites
@@ -30,7 +28,7 @@ def load_sarif(path: Path) -> dict:
 
 
 def file_signature(uri: str) -> str:
-    """Path-stable basename, used as the per-finding cross-tag key."""
+    """Basename, used as the per-finding cross-tag key."""
     return Path(uri).name if uri else ""
 
 
@@ -63,10 +61,10 @@ def suites_for_tag(tag: str) -> list[str]:
 
 def diff_pair(vuln: str, fix: str, suite_filter: str | None) -> None:
     suites = suites_for_tag(vuln) if suite_filter is None else [suite_filter]
-    print(f"\n=== diff {vuln} (vuln) → {fix} (fix) ===")
+    print(f"\n=== diff {vuln} (vuln) -> {fix} (fix) ===")
     print("  Reading: same (ruleId, file-basename) pairs across both SARIFs.")
-    print("  A positive 'vuln-only' delta means: that (rule, file) fires more times at")
-    print("  the vuln tag than at the fix tag — the difference is the TP candidate set.")
+    print("  A positive 'vuln-only' delta means that (rule, file) fires more times at")
+    print("  the vuln tag than at the fix tag.")
 
     for suite in suites:
         v = collect(vuln, suite)
@@ -75,7 +73,6 @@ def diff_pair(vuln: str, fix: str, suite_filter: str | None) -> None:
         ft = sum(f.values())
         vuln_only_pairs = [(k, v[k] - f[k]) for k in v if v[k] > f[k]]
         vuln_only_total = sum(d for _, d in vuln_only_pairs)
-        # (rule, file) combinations present at vuln but missing entirely at fix.
         newly_quiet = [k for k in v if k not in f]
 
         print(

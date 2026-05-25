@@ -1,6 +1,6 @@
 /**
  * @name Integer arithmetic hotspot
- * @description Flags arithmetic operations in integer-related CWE test cases. This intentionally broad experimental rule gives isolated integer runs benchmark signal.
+ * @description Flags arithmetic operations in integer-related CWE test cases. Broad rule used by the experimental integer suite to give isolated runs benchmark signal.
  * @kind problem
  * @id cpp/experimental/integer-arithmetic-hotspot
  * @problem.severity warning
@@ -44,4 +44,4 @@ predicate interestingArithmetic(Expr e) {
 from Expr e
 where integerCweFile(e) and interestingArithmetic(e)
 select e,
-  "This arithmetic expression is in an integer-related CWE benchmark and is included by the experimental integer suite."
+  "Arithmetic in an integer-related CWE benchmark. Flagged by the experimental integer suite."

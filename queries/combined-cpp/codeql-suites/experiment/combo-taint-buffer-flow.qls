@@ -1,2 +1,2 @@
-- description: Chained taint→buffer C/C++ query suite (data-flow, not co-occurrence)
+- description: Chained taint-to-buffer C/C++ query suite (data-flow, not co-occurrence)
 - query: TaintToBufferFlow.ql

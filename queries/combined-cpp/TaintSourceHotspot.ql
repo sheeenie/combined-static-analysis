@@ -33,5 +33,5 @@ predicate inputApi(FunctionCall call) {
 from FunctionCall call
 where inputApi(call)
 select call,
-  "This call to '" + call.getTarget().getName() +
-    "' is treated as an external-input hotspot by the experimental taint suite."
+  "Call to '" + call.getTarget().getName() +
+    "' treated as an external-input hotspot by the experimental taint suite."

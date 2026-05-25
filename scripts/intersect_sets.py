@@ -1,27 +1,23 @@
 #!/usr/bin/env python3
-"""Per-tag combination report for the four CWE pairs.
+"""Per-tag combination report for the four analysis pairs.
 
-Two relationship kinds, each with its own combination operator:
+Two relationship kinds, each with a primary operator:
 
-  * Dependency       — one analysis is a precondition / filter for the
-                       other. The security-relevant set is the
-                       *intersection*: a buffer-overflow candidate only
-                       matters if it is also attacker-reachable.
-                            taint + buffer  →  buffer ∩ taint
+  dependency       One analysis filters the other. The security-relevant
+                   set is the intersection: a buffer-overflow candidate
+                   only matters when it is also attacker-reachable.
+                       taint + buffer  ->  buffer intersect taint
 
-  * Complementary    — the two analyses cover different bug families
-                       and either-alone is sufficient evidence of an
-                       issue. The security-relevant set is the *union*:
-                       findings from either side belong in the bug
-                       list. Same-function intersections are still
-                       reported as the higher-confidence subset.
-                            integer + taint, integer + buffer,
-                            taint   + controlflow
+  complementary    Each analysis covers a different bug family and either
+                   one alone is sufficient evidence of an issue. The
+                   primary set is the union; the same-function
+                   intersection is still reported as the higher-confidence
+                   subset.
+                       integer + taint, integer + buffer,
+                       taint + controlflow
 
-For each (tag, pair) the report prints |A|, |B|, |A ∪ B|, |A ∩ T|
-where the granularity for the set operations is the enclosing function
-(so two findings of different rules in the same function are one
-function-level data point).
+For each (tag, pair) we print |A|, |B|, |A union B|, |A intersect B| where
+the granularity for the set operations is the enclosing function.
 
 Usage:
   python3 scripts/intersect_sets.py                    # all tags
@@ -134,13 +130,13 @@ def report_pair(label: str, suite_a: str, suite_b: str, relationship: str, tag: 
 
     print(f"\n  [{label}]  relationship: {relationship}   primary operator: {primary_op}")
     print(f"      |A|={a_total} in {len(a_funcs)} fn(s)   |B|={b_total} in {len(b_funcs)} fn(s)")
-    print(f"      |A ∪ B|_fn = {len(union)} fn(s)   |A ∩ B|_fn = {len(inter)} fn(s)   "
-          f"→ primary ({primary_op}) = {primary_count} fn(s)")
+    print(f"      |A u B|_fn = {len(union)} fn(s)   |A n B|_fn = {len(inter)} fn(s)   "
+          f"-> primary ({primary_op}) = {primary_count} fn(s)")
 
-    # Always show the intersection contents — it's the high-confidence
-    # subset whether or not it's the "primary" operator for the pair.
+    # Always show the intersection contents. It is the higher-confidence
+    # subset whether or not it is the primary operator for this pair.
     if inter:
-        print(f"      A ∩ B function list (where BOTH analyses fire):")
+        print(f"      A n B function list (both analyses fire):")
         for fn in sorted(inter)[:12]:
             print(f"        {fn}()   A:{len(a[fn])}  B:{len(b[fn])}")
         if len(inter) > 12:

@@ -1,6 +1,6 @@
 /**
  * @name Control-flow construct in function with external input
- * @description Flags loop and branch constructs in functions that also read external input. This broad rule expands taint/control-flow combination coverage.
+ * @description Flags loop and branch constructs in functions that also read external input. Broad combination rule for the taint + control-flow pair.
  * @kind problem
  * @id cpp/experimental/combo-taint-controlflow-hotspot
  * @problem.severity warning
@@ -38,4 +38,4 @@ where
   input.getEnclosingFunction() = f and
   inputApi(input)
 select s,
-  "This control-flow construct occurs in a function that also reads external input, combining taint and control-flow signals."
+  "Control-flow construct in a function that also reads external input. Combined taint + control-flow signal."

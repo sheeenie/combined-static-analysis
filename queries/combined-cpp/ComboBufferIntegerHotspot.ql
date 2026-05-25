@@ -1,6 +1,6 @@
 /**
  * @name Buffer operation with integer-sized expression
- * @description Flags copy, allocation, and formatting calls whose size argument contains arithmetic. This broad combination rule is expected to find more, with more false positives.
+ * @description Flags copy, allocation, and formatting calls whose size argument contains arithmetic. Broad combination rule, higher recall and more false positives than the isolated suites.
  * @kind problem
  * @id cpp/experimental/combo-buffer-integer-hotspot
  * @problem.severity warning
@@ -54,4 +54,4 @@ where
   ) and
   arithmeticExpr(arithmetic)
 select call,
-  "This size-sensitive call uses arithmetic in an argument, combining buffer and integer-risk signals."
+  "Size-sensitive call with arithmetic in an argument. Combined buffer + integer signal."

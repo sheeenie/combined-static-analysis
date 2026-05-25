@@ -5,10 +5,10 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-# Function-definition heuristic for Juliet-style C/C++:
-# A line whose first non-whitespace tokens look like "<rettype> <name>(..." and
-# does not end in ';'. Works for the clean Juliet style where the opening brace
-# is on the next line. Captures the last identifier before '(' as the name.
+# Function-definition heuristic for Juliet-style C/C++. Matches a line that
+# looks like "<rettype> <name>(...)" with no trailing semicolon. Works for the
+# Juliet style where the opening brace is on the next line. The captured
+# group is the function name.
 FUNC_DEF_RE = re.compile(
     r"""^[ \t]*
         (?:static\s+|inline\s+|extern\s+|virtual\s+)*
@@ -20,9 +20,10 @@ FUNC_DEF_RE = re.compile(
     re.VERBOSE,
 )
 
-# Map from SARIF-filename prefix → source root used during database creation.
-# Lets the summarizer resolve relative artifact URIs cheaply, without scanning
-# the whole `my_cases/` tree (≈40k files). Add new shards here as needed.
+# Map from SARIF-filename prefix to the source root used during database
+# creation. Lets the summarizer resolve relative artifact URIs without
+# scanning the whole my_cases/ tree (around 40k files). Add new shards
+# here as needed.
 SHARD_ROOTS: dict[str, Path] = {
     "buffer-integer-cwe190-s02": Path("my_cases/buffer + integer/CWE190_Integer_Overflow/s02"),
     "integer-taint-cwe190-s03": Path("my_cases/integer + taint/CWE190_Integer_Overflow/s03"),
@@ -102,8 +103,8 @@ def function_ranges(path: Path) -> list[tuple[int, str]]:
         m = FUNC_DEF_RE.match(line)
         if not m:
             continue
-        # Confirm next non-blank line is '{' to reduce false positives like
-        # forward declarations that happen to lack a trailing semicolon.
+        # Confirm next non-blank line is '{', so we skip forward
+        # declarations that happen to lack a trailing semicolon.
         for j in range(i, min(i + 3, len(lines))):
             nxt = lines[j].strip()
             if not nxt:
@@ -202,13 +203,15 @@ def summarize(path: Path) -> int:
 
 def count_expected_in_corpus(corpus: Path, restrict_to: set[Path] | None = None) -> tuple[int, int]:
     """Walk `corpus` and count Juliet-labelled functions.
-    Returns (num_bad, num_good) — i.e. ground-truth TP-sites and TN-sites.
-    Counts each function once. Functions whose names contain neither
-    'bad' nor 'good' (helpers, main, etc.) are ignored.
+
+    Returns (num_bad, num_good), i.e. ground-truth TP and TN sites. Each
+    function is counted once. Functions whose names contain neither 'bad'
+    nor 'good' (helpers, main, etc.) are ignored.
 
     If `restrict_to` is given, only consider source files in that set.
-    Used to scope recall to the files actually present in the analyzed
-    database, not the full corpus on disk."""
+    Used to scope recall to the files the analysed database actually
+    contains, not the full corpus on disk.
+    """
     bad = 0
     good = 0
     if restrict_to is not None:
@@ -226,12 +229,13 @@ def count_expected_in_corpus(corpus: Path, restrict_to: set[Path] | None = None)
 
 
 def sarif_artifact_paths(sarif_paths: list[Path]) -> set[Path]:
-    """Return the union of source files referenced by *results* across all
-    given SARIFs. We deliberately ignore the run.artifacts[] metadata array
-    because CodeQL records every file in --source-root there, including
-    files the build command never compiled — which would inflate the
-    recall denominator. Result locations only ever appear for files the
-    database actually analyzed."""
+    """Union of source files referenced by *results* across all given SARIFs.
+
+    We ignore the run.artifacts[] metadata because CodeQL records every
+    file in --source-root there, including files the build command never
+    compiled. That would inflate the recall denominator. Result locations
+    only appear for files the database actually analysed.
+    """
     files: set[Path] = set()
     for sp in sarif_paths:
         try:
@@ -281,8 +285,8 @@ def compare(corpus_arg: str, sarif_args: list[str]) -> int:
     if not corpus.exists():
         print(f"corpus not found: {corpus}", file=sys.stderr)
         return 2
-    # Scope ground-truth counting to files that the SARIFs actually reference,
-    # so recall is computed against what the database saw — not against every
+    # Scope ground-truth counting to files the SARIFs actually reference,
+    # so recall is computed against what the database saw, not against every
     # .c file sitting under `corpus` on disk.
     analyzed = sarif_artifact_paths([Path(a) for a in sarif_args])
     if analyzed:
@@ -307,7 +311,7 @@ def compare(corpus_arg: str, sarif_args: list[str]) -> int:
         total = tp + fp + unk
         prec = (tp / (tp + fp) * 100.0) if (tp + fp) else 0.0
         rec = (len(flagged_bad) / bad_total * 100.0) if bad_total else 0.0
-        # Suite label from the SARIF filename: <shard>.<suite>.sarif → <suite>
+        # Suite label from the SARIF filename: <shard>.<suite>.sarif -> <suite>
         stem = path.name[:-len(".sarif")] if path.name.endswith(".sarif") else path.name
         suite = stem.rsplit(".", 1)[1] if "." in stem else stem
         print(f"  {suite:<32} {total:>8} {tp:>5} {fp:>5} {unk:>5}  {prec:>9.1f}%  {rec:>7.1f}%")

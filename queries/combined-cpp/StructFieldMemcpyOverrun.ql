@@ -14,13 +14,8 @@
 
 import cpp
 
-/**
- * Gets a field access used as the destination object in `memcpy` or `memmove`.
- *
- * The destination argument may contain implicit conversions, so look through
- * the argument's expression tree rather than requiring the argument itself to
- * be the field access.
- */
+// Field access used as the destination of memcpy/memmove. The argument may
+// contain implicit conversions, so walk the expression tree.
 FieldAccess getDestinationFieldAccess(FunctionCall call) {
   call.getTarget().hasGlobalName(["memcpy", "memmove"]) and
   result = call.getArgument(0).getAChild*()
@@ -33,6 +28,6 @@ where
   copySize = call.getArgument(2).getValue().toInt() and
   copySize > destSize
 select call,
-  "This " + call.getTarget().getName() + " writes " + copySize + " bytes into field '" +
+  call.getTarget().getName() + " writes " + copySize + " bytes into field '" +
     dest.getTarget().getName() +
-    "', which is only " + destSize + " bytes. Use the field size rather than the enclosing object size."
+    "' which is only " + destSize + " bytes. Use the field size rather than the enclosing object size."

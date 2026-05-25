@@ -1,6 +1,6 @@
 /**
  * @name Integer arithmetic in function with external input
- * @description Flags arithmetic performed in a function that also reads external input. This broad combination rule is expected to produce richer, noisier integer-taint results.
+ * @description Flags arithmetic performed in a function that also reads external input. Broad combination rule with higher recall and more false positives than the isolated suites.
  * @kind problem
  * @id cpp/experimental/combo-integer-taint-hotspot
  * @problem.severity warning
@@ -39,4 +39,4 @@ where
   input.getEnclosingFunction() = f and
   inputApi(input)
 select arithmetic,
-  "This arithmetic expression is in a function that also reads external input, combining integer and taint signals."
+  "Arithmetic in a function that also reads external input. Combined integer + taint signal."

@@ -1,10 +1,10 @@
 /**
  * @name User input reaches a buffer-write size or index
- * @description Chained taint→buffer analysis. Reports an actual data-flow path
- *              from a user-input source (recv, fgets, scanf, argv, getenv, ...)
- *              to the size argument of a copy/format API or the index of an
- *              array write. Unlike the syntactic co-occurrence combo, a finding
- *              here means the unsafe write is reachable from attacker input.
+ * @description Chained taint to buffer analysis. Reports a data-flow path
+ *              from a user-input source (recv, fgets, scanf, argv, getenv,
+ *              libpng wrappers) to the size argument of a copy/format API,
+ *              the index of an array write, or a tainted-integer comparison
+ *              that gates a size check.
  * @kind path-problem
  * @id cpp/experimental/taint-to-buffer-flow
  * @problem.severity error
@@ -32,22 +32,16 @@ predicate isFlowSource(FS::FlowSource source, string sourceType) {
   sourceType = source.getSourceType()
 }
 
-/**
- * Stock FlowSources OR libpng-specific sources. The libpng additions are
- * what give the data-flow query nonzero hits on PNG decoder code; without
- * them, `fread` is reached only through `png_read_data`'s function pointer
- * and the stock model does not bridge that indirection.
- */
+// Stock FlowSources OR libpng-specific sources. The libpng additions are what
+// give the data-flow query nonzero hits on PNG decoder code.
 predicate isAnySource(DataFlow::Node source, string sourceType) {
   isFlowSource(source, sourceType)
   or
   libpngFlowSource(source, sourceType)
 }
 
-/**
- * Holds if `call` is a size-sensitive buffer/format API and `argIndex` is the
- * 0-based index of its size argument.
- */
+// Holds if `call` is a size-sensitive buffer/format API and `argIndex` is the
+// 0-based index of its size argument.
 predicate sizeArgOf(FunctionCall call, int argIndex) {
   call.getTarget().hasGlobalName(["memcpy", "memmove", "memset", "wmemcpy", "wmemmove", "wmemset"]) and
     argIndex = 2
@@ -67,12 +61,8 @@ predicate sizeArgOf(FunctionCall call, int argIndex) {
   call.getTarget().hasGlobalName(["recv", "recvfrom", "read"]) and argIndex = 2
 }
 
-/**
- * A guard that imposes some upper-bound check on `e`, acting as a sanitizer.
- * Mirrors the barrier used in `ImproperArrayIndexValidation.ql`: if the value
- * is compared against a positive constant, or against another value `+ k`,
- * with `k > 0`, downstream uses are treated as sanitized.
- */
+// Upper-bound check on `e`, used as a sanitiser barrier. Mirrors the pattern
+// used in ImproperArrayIndexValidation.ql.
 predicate guardChecks(IRGuardCondition g, Expr e, boolean branch) {
   exists(Operand op | op.getDef().getConvertedResultExpression() = e |
     g.comparesLt(op, any(int k | k > 0), true, any(GuardValue bv | bv.asBooleanValue() = branch))
@@ -102,15 +92,11 @@ module TaintToBufferConfig implements DataFlow::ConfigSig {
     // Index expression of an array write.
     exists(ArrayExpr ae | sink.asExpr() = ae.getArrayOffset())
     or
-    // Integer-guard sink: a tainted integer used as an operand of a
-    // size/bounds comparison. This is the sink shape for CWE-190 bugs
-    // where the wrap happens inside the bounds-check arithmetic itself
-    // (CVE-2018-13785 in libpng is the motivating example: a chunk
-    // length is compared against a value derived from arithmetic that
-    // can wrap, so the guard is bypassed without the tainted value ever
-    // reaching a `memcpy` size argument). To suppress trivial flag-vs-
-    // constant checks, require the *other* operand to be a non-literal
-    // expression — i.e. itself computed at runtime.
+    // Tainted integer used as an operand of a bounds/size comparison whose
+    // other operand is itself computed at runtime (not a literal). Matches
+    // the shape of CVE-2018-13785 in libpng, where a chunk length is
+    // compared against an arithmetic expression that can wrap, so the guard
+    // is bypassed before the tainted value reaches a memcpy size argument.
     exists(ComparisonOperation cmp, Expr other |
       sink.asExpr() = cmp.getAnOperand() and
       other = cmp.getAnOperand() and
@@ -125,10 +111,7 @@ module TaintToBufferConfig implements DataFlow::ConfigSig {
 
 module TaintToBufferFlow = TaintTracking::Global<TaintToBufferConfig>;
 
-/**
- * Short description of what the sink represents, used in the result message
- * to distinguish array-index sinks from buffer-size sinks.
- */
+// Short description of the sink, used in the result message.
 string sinkKind(DataFlow::Node sink) {
   exists(FunctionCall call, int i |
     sizeArgOf(call, i) and

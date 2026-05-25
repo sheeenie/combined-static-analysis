@@ -38,4 +38,4 @@ predicate interestingControlFlow(Stmt s) {
 from Stmt s
 where controlFlowCweFile(s) and interestingControlFlow(s)
 select s,
-  "This control-flow construct appears in a control-flow-related CWE benchmark and is included by the experimental control-flow suite."
+  "Control-flow construct in a control-flow CWE benchmark. Flagged by the experimental control-flow suite."

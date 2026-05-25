@@ -1,6 +1,6 @@
 /**
  * @name Buffer operation in function with external input
- * @description Flags copy/write calls in functions that also read external input. This broad combination rule complements precise buffer-overrun checks.
+ * @description Flags copy/write calls in functions that also read external input. Broad combination rule, complements the precise buffer-overrun checks.
  * @kind problem
  * @id cpp/experimental/combo-taint-buffer-hotspot
  * @problem.severity warning
@@ -44,4 +44,4 @@ where
   input.getEnclosingFunction() = f and
   inputApi(input)
 select buffer,
-  "This buffer operation occurs in a function that also reads external input, combining taint and buffer signals."
+  "Buffer operation in a function that also reads external input. Combined taint + buffer signal."

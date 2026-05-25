@@ -1,6 +1,6 @@
 /**
  * @name Buffer-oriented dangerous copy/write hotspot
- * @description Flags common C/C++ copy and formatted-write APIs in buffer-related CWE test cases. This intentionally broad experimental rule improves benchmark coverage.
+ * @description Flags common C/C++ copy and formatted-write APIs in buffer-related CWE test cases. Broad rule used by the experimental buffer suite.
  * @kind problem
  * @id cpp/experimental/buffer-dangerous-api-hotspot
  * @problem.severity warning
@@ -60,5 +60,5 @@ where
     call.getTarget().hasGlobalName(["gets", "strcpy", "strcat", "sprintf", "vsprintf"])
   )
 select call,
-  "This call to '" + call.getTarget().getName() +
-    "' is a buffer-sensitive hotspot included by the experimental buffer suite."
+  "Call to '" + call.getTarget().getName() +
+    "' flagged by the experimental buffer suite."
